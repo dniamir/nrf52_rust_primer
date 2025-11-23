@@ -6,23 +6,35 @@ use embassy_executor::Spawner;
 use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
 use embassy_time::Timer;
 use nrf52_rust_primer::{self as _, info, led::Led};
+use embassy_hal_internal::Peri;
 
-bind_interrupts!(struct Irqs {
-    TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;
-});
+bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 
 const GREEN: &str = "\x1b[32m";
 const RED: &str = "\x1b[31m";
 const RESET: &str = "\x1b[0m";
 
-#[embassy_executor::main]
-async fn main(_spawner: Spawner) {
-    let p = nrf52_rust_primer::hal::init(Default::default());
+// Declare async tasks
+#[embassy_executor::task]
+async fn blink(pin: Peri<'static, crate::peripherals::P0_13>) {
 
     // Set up LED for visual feedback
-    let mut led = Led::new(p.P0_13);
+    // let pin = p.P0_13;
+    let mut led = Led::new(pin);
+
+    loop {
+        // Timekeeping is globally available, no need to mess with hardware timers.
+        led.blink(2000).await;
+    }
+}
+
+#[embassy_executor::main]
+async fn main(spawner: Spawner) {
+    let p = nrf52_rust_primer::hal::init(Default::default());
     
-    info!("I2C Scanner started!");
+    // Spawn LED blink task (runs concurrently in background)
+    info!("Blinky Starting...");
+    spawner.spawn(blink(p.P0_13)).unwrap();
 
     // Set up I2C (TWIM - Two Wire Interface Master)
     // Configure pins for I2C: P0_26 as SCL, P0_27 as SDA
@@ -39,10 +51,8 @@ async fn main(_spawner: Spawner) {
         // Scan through valid I2C addresses (0x08 to 0x77)
         // 0x00-0x07 and 0x78-0x7F are reserved
         for addr in 0x08..=0x77u8 {
-            // Try to write to the address (with empty data)
-            let mut dummy = [0u8; 1];
-            
-            match i2c.write(addr, &dummy).await {
+            // Try to write to the address (with empty data)            
+            match i2c.write(addr, &[0u8; 1]).await {
                 Ok(()) => info!("{}Found device at address 0x{:02X}{}", GREEN, addr, RESET),
                 Err(_) => info!("{}No device at address 0x{:02X}{}", RED, addr, RESET),
             }
@@ -52,9 +62,6 @@ async fn main(_spawner: Spawner) {
         }
         
         info!("========");
-        
-        // Blink LED to indicate scan completion
-        led.blink(100).await;
         
         // Wait before next scan
         Timer::after_secs(3).await;
