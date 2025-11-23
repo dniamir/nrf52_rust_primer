@@ -3,19 +3,40 @@
 
   "tasks": [
 
-    // Build for Blinky
+    // Build for NRF52 (default)
     {
-    "label": "Build blinky",
-    "type": "shell",
-    "command": "cargo",
-    "args": [
+      "label": "Build blinky (NRF52)",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
         "build",
         "--bin",
-        "blinky",  // Name of the binary to build - will only build this file and dependencies (i2c_scan.rs can be broken and this'll work)
+        "blinky",
         "--target",
         "thumbv7em-none-eabihf"
-    ],
-    "group": "build"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+
+    // Build for STM32
+    {
+      "label": "Build blinky (STM32)",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "build",
+        "--bin",
+        "blinky",
+        "--target",
+        "thumbv7em-none-eabihf",
+        "--no-default-features",
+        "--features",
+        "stm32"
+      ],
+      "group": "build"
     },
 
   ]

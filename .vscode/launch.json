@@ -4,7 +4,7 @@
 
     // Debug for Blinky
     {
-      "name": "Debug blinky",
+      "name": "Debug blinky (NRF52)",
       "type": "probe-rs-debug",
       "request": "launch",
       "cwd": "${workspaceFolder}",
@@ -30,7 +30,37 @@
           ]
         }
       ],
-      "preLaunchTask": "Build blinky"
+      "preLaunchTask": "Build blinky (NRF52)"
+    },
+
+    {
+      "name": "Debug blinky (STM32)",
+      "type": "probe-rs-debug",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "probe": "1366:1015",
+      "chip": "nrf52840_xxAA",
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "resetAfterFlashing": true,
+        // "haltAfterReset": true,
+        "haltAfterReset": false,
+      },
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/blinky",
+          "rttEnabled": true,
+          "rttChannelFormats": [
+            {
+              "channelNumber": 0,
+              "dataFormat": "Defmt",
+              "showTimestamps": true
+            }
+          ]
+        }
+      ],
+      "preLaunchTask": "Build blinky (STM32)"
     },
 
   ]

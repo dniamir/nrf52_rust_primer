@@ -2,6 +2,18 @@
 
 use defmt_rtt as _;
 
+// HAL abstraction layer - conditionally compile based on feature flags
+#[cfg(feature = "nrf")]
+pub use embassy_nrf as hal;
+
+#[cfg(feature = "stm32")]
+pub use embassy_stm32 as hal;
+
+// Generic HAL initialization function
+pub fn init_hal(config: hal::config::Config) -> hal::Peripherals {
+    hal::init(config)
+}
+
 // Re-export logging macros - change this one line to swap logging frameworks
 pub use defmt::{debug, error, info, trace, warn};
 

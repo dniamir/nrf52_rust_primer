@@ -1,6 +1,6 @@
 // src/led.rs
 use crate::info;
-use embassy_nrf::gpio::{Pin, Output, Level, OutputDrive};
+use crate::hal::gpio::{Pin, Output, Level, OutputDrive};
 use embassy_hal_internal::Peri;
 use embassy_time::Timer;
 
