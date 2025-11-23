@@ -11,6 +11,10 @@ stm32 = ["embassy-stm32"]
 name = "blinky"
 path = "src/blinky.rs"
 
+[[bin]]
+name = "i2c_scan"
+path = "src/i2c_scan.rs"
+
 [profile.dev]
 debug = 2
 opt-level = 1

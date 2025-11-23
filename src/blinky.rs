@@ -1,5 +1,6 @@
-#![no_std]
+// Blinky
 #![no_main]
+#![no_std]
 
 use embassy_executor::Spawner;
 use nrf52_rust_primer::{self as _, info, led::Led};

@@ -3,7 +3,7 @@
 
   "tasks": [
 
-    // Build for NRF52 (default)
+    // Build for NRF52 Blinky
     {
       "label": "Build blinky (NRF52)",
       "type": "shell",
@@ -21,7 +21,7 @@
       }
     },
 
-    // Build for STM32
+    // Build for STM32 Blinky
     {
       "label": "Build blinky (STM32)",
       "type": "shell",
@@ -37,6 +37,24 @@
         "stm32"
       ],
       "group": "build"
+    },
+
+        // Build for NRF52 I2C Scanner
+    {
+      "label": "Build i2c_scan (NRF52)",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "build",
+        "--bin",
+        "i2c_scan",
+        "--target",
+        "thumbv7em-none-eabihf"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
 
   ]
