@@ -1,30 +1,27 @@
 // src/led.rs
-// use stm32h7xx_hal::hal::digital::v2::OutputPin;
-// use stm32h7xx_hal::hal::blocking::delay::DelayMs;
+use crate::info;
+use embassy_nrf::gpio::{Pin, Output, Level, OutputDrive};
+use embassy_hal_internal::Peri;
+use embassy_time::Timer;
 
-// pub struct Led<P>
-// where
-//     P: OutputPin,
-// {
-//     pin: P,
-// }
+pub struct Led<'a> {
+    led_pin: Output<'a>,
+}
 
-// impl<P> Led<P>
-// where
-//     P: OutputPin,
-// {
-//     pub fn new(pin: P) -> Self {
-//         Self { pin }
-//     }
+impl<'d> Led<'d> {
+    pub fn new(pin: Peri<'d, impl Pin>) -> Self {
+        // Output::new *owns* the pin in embassy-nrf 0.8
+        let led_pin = Output::new(pin, Level::Low, OutputDrive::Standard);
+        Self { led_pin }
+    }
 
-//     // pass delay in here
-//     pub fn blink<D>(&mut self, delay: &mut D, ms: u32)
-//     where
-//         D: DelayMs<u32>,
-//     {
-//         let _ = self.pin.set_high();
-//         delay.delay_ms(ms);
-//         let _ = self.pin.set_low();
-//         delay.delay_ms(ms);
-//     }
-// }
+    pub async fn blink(&mut self, delay_ms: u64) {
+        info!("LED ON");
+        self.led_pin.set_high();
+        Timer::after_millis(delay_ms).await;
+
+        info!("LED OFF");
+        self.led_pin.set_low();
+        Timer::after_millis(delay_ms).await;
+    }
+}
