@@ -95,5 +95,36 @@
       "preLaunchTask": "Build i2c_scan (NRF52)"
     },
 
+    // Debug for chip_read
+    {
+      "name": "Debug chip_read (NRF52)",
+      "type": "probe-rs-debug",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "probe": "1366:1015",
+      "chip": "nrf52840_xxAA",
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "resetAfterFlashing": true,
+        // "haltAfterReset": true,
+        "haltAfterReset": false,
+      },
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/chip_read",
+          "rttEnabled": true,
+          "rttChannelFormats": [
+            {
+              "channelNumber": 0,
+              "dataFormat": "Defmt",
+              "showTimestamps": true
+            }
+          ]
+        }
+      ],
+      "preLaunchTask": "Build chip_read (NRF52)"
+    },
+
   ]
 }

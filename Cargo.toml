@@ -15,6 +15,10 @@ path = "src/blinky.rs"
 name = "i2c_scan"
 path = "src/i2c_scan.rs"
 
+[[bin]]
+name = "chip_read"
+path = "src/chip_read.rs"
+
 [profile.dev]
 debug = 2
 opt-level = 1

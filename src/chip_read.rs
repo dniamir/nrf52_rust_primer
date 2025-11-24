@@ -11,17 +11,13 @@ use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
 use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::{self as _, info, led::Led};
+use nrf52_rust_primer::{self as _, info, led::Led, chip::Chip};
 
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 
 // Static I2C bus protected by a Mutex for sharing between tasks
 static I2C_BUS: StaticCell<Mutex<ThreadModeRawMutex, Twim<'static>>> = StaticCell::new();
 static TX_BUF: StaticCell<[u8; 32]> = StaticCell::new();
-
-const GREEN: &str = "\x1b[32m";
-const RED: &str = "\x1b[31m";
-const RESET: &str = "\x1b[0m";
 
 // Declare async tasks
 // Async Blinky
@@ -40,30 +36,38 @@ async fn blink(pin: Peri<'static, crate::peripherals::P0_13>) {
 
 // Async i2c
 #[embassy_executor::task]
-async fn i2c_scan(i2c_bus: &'static Mutex<ThreadModeRawMutex, Twim<'static>>) {
+async fn chip_read(i2c_bus: &'static Mutex<ThreadModeRawMutex, Twim<'static>>) {
+
+    // Do some simple chip reads
+    info!("Setting up chip");
+
+    let bme_address = 0x76;
+    let chip = Chip::new_generic(i2c_bus, bme_address);
 
     loop {
-        // Scan through valid I2C addresses (0x08 to 0x77)
-        // 0x00-0x07 and 0x78-0x7F are reserved
-        info!("Starting I2C address scan...");
-        info!("Scanning addresses 0x08 to 0x77...");
-        for addr in 0x08..=0x77u8 {
-            // Try to write to the address (with empty data)            
-            let result = {
-                let mut i2c = i2c_bus.lock().await;
-                i2c.write(addr, &[0u8; 1]).await
-            };
-            match result {
-                Ok(()) => info!("{}Found device at address 0x{:02X}{}", GREEN, addr, RESET),
-                Err(_) => info!("{}No device at address 0x{:02X}{}", RED, addr, RESET),
-            }
-            
-            // Small delay between probes to avoid overwhelming the bus
-            Timer::after_millis(2).await;
-        }
+
+
+        // Read register with generic register read
+        let _field_val2 = chip.read_reg(0xD0).await.unwrap();
+
+        info!("========");
+
+        chip.write_reg(0x74, 0b11100011).await.unwrap();
+        chip.read_reg(0x74).await.unwrap();
+
+        info!("========");
+
+        chip.write_reg(0x74, 0b00011100).await.unwrap();
+        chip.read_reg(0x74).await.unwrap();
+
+        info!("========");
+
+        let reg_vals = &mut [0u8; 4];
+        chip.read_regs(0x74, reg_vals).await.unwrap();
+
+        info!("========");
 
         // Wait before next scan
-        info!("========");
         Timer::after_secs(3).await;
     }
 }
@@ -84,7 +88,7 @@ async fn main(spawner: Spawner) {
     
     // Spawn i2c scan task (runs concurrently in background)
     info!("I2C Scan Starting...");
-    spawner.spawn(i2c_scan(i2c_bus)).unwrap();
+    spawner.spawn(chip_read(i2c_bus)).unwrap();
 
     let mut count = 0;
 

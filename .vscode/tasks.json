@@ -57,5 +57,23 @@
       }
     },
 
+    // Build for NRF52 Chip Reader
+    {
+      "label": "Build chip_read (NRF52)",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "build",
+        "--bin",
+        "chip_read",
+        "--target",
+        "thumbv7em-none-eabihf"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+
   ]
 }
