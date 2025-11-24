@@ -3,7 +3,8 @@
 #![no_std]
 
 use embassy_executor::Spawner;
-use nrf52_rust_primer::{self as _, info, led::Led};
+use nrf52_rust_primer::{self as _, led::Led};
+use nrf52_rust_primer::d_info;
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
@@ -11,15 +12,15 @@ async fn main(_spawner: Spawner) {
 
     let mut led = Led::new(p.P0_13);
     
-    info!("Blinky started!");
+    d_info!("Blinky started!");
 
     let mut count = 0;
 
     loop {
         count += 1;
 
-        info!("Count: {}", count);
+        d_info!("Count: {}", count);
         led.blink(100).await;
-        info!("========");
+        d_info!("========");
     }
 }

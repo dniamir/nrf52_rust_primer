@@ -3,7 +3,7 @@ use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
 use crate::hal::twim::{Twim, Error as TwimError};
-use crate::info;
+use crate::{dlogger::DLogger, d_info};  // Logging
 
 use crate::chip_map;
 
@@ -35,7 +35,7 @@ impl<MAP> Chip<MAP> {
 
         let mut reg_idx = 0;
         for reg_value in reg_values.iter() {
-            info!("Read Register: 0x{=u8:X}, {=u8:b}, 0x{=u8:X}, {}", reg + reg_idx, reg_value, reg_value, reg_value);
+            d_info!("Read Register: 0x{=u8:X}, {=u8:b}, 0x{=u8:X}, {}", reg + reg_idx, reg_value, reg_value, reg_value);
             reg_idx += 1;
         }
 
@@ -46,16 +46,21 @@ impl<MAP> Chip<MAP> {
         // Basic function to write a single register
         let mut i2c = self.i2c_bus.lock().await;
         i2c.write(self.i2c_addr, &[reg, reg_val]).await.map_err(I2CError::I2CError)?;
-        info!("Write Register: {}, {=u8:b}, {=u8:X}, {}", reg, reg_val, reg_val, reg_val);
+        d_info!("Write Register: 0x{=u8:X}, {=u8:b}, 0x{=u8:X}, {}", reg, reg_val, reg_val, reg_val);
         Ok(())
     }
 
     pub async fn read_reg(&self, reg: u8) -> Result<u8, I2CError> {
         // Basic function to read a single register
         let mut reg_vals = [0];
+    
+        // Read reg
+        DLogger::hold();
         self.read_regs(reg, &mut reg_vals).await?;
+        DLogger::release();
+
         let reg_value = reg_vals[0];
-        info!("Read Register: 0x{=u8:X}, {=u8:b}, 0x{=u8:X}, {}", reg, reg_value, reg_value, reg_value);
+        d_info!("Read Register: 0x{=u8:X}, {=u8:b}, 0x{=u8:X}, {}", reg, reg_value, reg_value, reg_value);
         Ok(reg_value)
     }
 }
@@ -83,8 +88,10 @@ where
         let reg_dets = MAP::get_field(reg_str).ok_or(I2CError::NotFound)?;
         
         // Just read the raw register value
+        DLogger::hold();
         let reg_value = self.read_reg(reg_dets.reg).await?;
-        info!("Read Register: {}, {=u8:b}, 0x{=u8:X}, {}", reg_str, reg_value, reg_value, reg_value);
+        DLogger::release();
+        d_info!("Read Register: {}, {=u8:b}, 0x{=u8:X}, {}", reg_str, reg_value, reg_value, reg_value);
         Ok(reg_value)
     }
 
@@ -95,8 +102,10 @@ where
         let reg_dets = MAP::get_field(reg_str).ok_or(I2CError::NotFound)?;
         
         // Write the register
+        DLogger::hold();
         self.write_reg(reg_dets.reg, reg_val).await?;
-        info!("Write Register: {}, {=u8:b}, 0x{=u8:X}, {}", reg_str, reg_val, reg_val, reg_val);
+        DLogger::release();
+        d_info!("Write Register: {}, {=u8:b}, 0x{=u8:X}, {}", reg_str, reg_val, reg_val, reg_val);
         Ok(())
     }
 
@@ -110,13 +119,15 @@ where
         let field_bits: u8 = field_dets.bits as u8;
 
         // Read the field
+        DLogger::hold();
         let reg_val = self.read_reg(field_reg as u8).await?;
+        DLogger::release();
 
         // Get field value from masking
         let mask = (((1u32 << field_bits) - 1) << field_offset) as u8;
         let field_val = (reg_val & mask) >> field_offset;
 
-        info!("Read Field: {}, {=u8:b}, 0x{=u8:X}, {}", field, field_val, field_val, field_val);
+        d_info!("Read Field: {}, {=u8:b}, 0x{=u8:X}, {}", field, field_val, field_val, field_val);
 
         Ok(field_val)
     }
@@ -130,6 +141,8 @@ where
         let field_offset: u8 = field_dets.offset as u8;
         let field_bits: u8 = field_dets.bits as u8;
 
+        // Read the register
+        DLogger::hold();
         let curr_field_val = self.read_reg(field_reg).await?;
 
         // Clear the field
@@ -138,9 +151,11 @@ where
         let inserted = ((field_val as u32) << field_offset) & mask;
         let field_val = (cleared | inserted) as u8;
     
+        // Write the register
         self.write_reg(field_reg, field_val).await?;
+        DLogger::release();
 
-        info!("Write Field: {}, {=u8:b}, 0x{=u8:X}, {}", field, field_val, field_val, field_val);
+        d_info!("Write Field: {}, {=u8:b}, 0x{=u8:X}, {}", field, field_val, field_val, field_val);
 
         Ok(())
     }

@@ -11,7 +11,8 @@ use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
 use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::{self as _, info, led::Led, chip::Chip};
+use nrf52_rust_primer::{self as _, led::Led, chip::Chip};
+use nrf52_rust_primer::d_info;  // Logging
 
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 
@@ -39,7 +40,7 @@ async fn blink(pin: Peri<'static, crate::peripherals::P0_13>) {
 async fn chip_read(i2c_bus: &'static Mutex<ThreadModeRawMutex, Twim<'static>>) {
 
     // Do some simple chip reads
-    info!("Setting up chip");
+    d_info!("Setting up chip");
 
     let bme_address = 0x76;
     let chip = Chip::new_generic(i2c_bus, bme_address);
@@ -50,22 +51,22 @@ async fn chip_read(i2c_bus: &'static Mutex<ThreadModeRawMutex, Twim<'static>>) {
         // Read register with generic register read
         let _field_val2 = chip.read_reg(0xD0).await.unwrap();
 
-        info!("========");
+        d_info!("========");
 
         chip.write_reg(0x74, 0b11100011).await.unwrap();
         chip.read_reg(0x74).await.unwrap();
 
-        info!("========");
+        d_info!("========");
 
         chip.write_reg(0x74, 0b00011100).await.unwrap();
         chip.read_reg(0x74).await.unwrap();
 
-        info!("========");
+        d_info!("========");
 
         let reg_vals = &mut [0u8; 4];
         chip.read_regs(0x74, reg_vals).await.unwrap();
 
-        info!("========");
+        d_info!("========");
 
         // Wait before next scan
         Timer::after_secs(3).await;
@@ -83,18 +84,18 @@ async fn main(spawner: Spawner) {
     let i2c_bus = I2C_BUS.init(Mutex::new(i2c));
 
     // Spawn LED blink task (runs concurrently in background)
-    info!("Blinky Starting...");
+    d_info!("Blinky Starting...");
     spawner.spawn(blink(p.P0_13)).unwrap();
     
     // Spawn i2c scan task (runs concurrently in background)
-    info!("I2C Scan Starting...");
+    d_info!("I2C Scan Starting...");
     spawner.spawn(chip_read(i2c_bus)).unwrap();
 
     let mut count = 0;
 
     loop {
         count += 1;
-        info!("Count: {}", count);
+        d_info!("Count: {}", count);
         Timer::after_secs(1).await;
     }
 }

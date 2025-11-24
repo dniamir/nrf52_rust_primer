@@ -1,5 +1,5 @@
 // src/led.rs
-use crate::info;
+use crate::d_info;
 use crate::hal::gpio::{Pin, Output, Level, OutputDrive};
 use embassy_hal_internal::Peri;
 use embassy_time::Timer;
@@ -16,11 +16,11 @@ impl<'d> Led<'d> {
     }
 
     pub async fn blink(&mut self, delay_ms: u64) {
-        info!("LED ON");
+        d_info!("LED ON");
         self.led_pin.set_high();
         Timer::after_millis(delay_ms).await;
 
-        info!("LED OFF");
+        d_info!("LED OFF");
         self.led_pin.set_low();
         Timer::after_millis(delay_ms).await;
     }

@@ -38,3 +38,6 @@ pub mod chip;
 
 #[path = "lib/chip_map.rs"]
 pub mod chip_map;
+
+#[path = "lib/dlogger.rs"]
+pub mod dlogger;
