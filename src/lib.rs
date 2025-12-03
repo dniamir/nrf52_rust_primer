@@ -41,3 +41,6 @@ pub mod chip_map;
 
 #[path = "lib/dlogger.rs"]
 pub mod dlogger;
+
+#[path = "lib/bme680.rs"]
+pub mod bme680;

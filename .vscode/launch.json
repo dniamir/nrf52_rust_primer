@@ -126,5 +126,36 @@
       "preLaunchTask": "Build chip_read (NRF52)"
     },
 
+    // Debug for bme680_read
+    {
+      "name": "Debug bme680_read (NRF52)",
+      "type": "probe-rs-debug",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "probe": "1366:1015",
+      "chip": "nrf52840_xxAA",
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "resetAfterFlashing": true,
+        // "haltAfterReset": true,
+        "haltAfterReset": false,
+      },
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/bme680_read",
+          "rttEnabled": true,
+          "rttChannelFormats": [
+            {
+              "channelNumber": 0,
+              "dataFormat": "Defmt",
+              "showTimestamps": true
+            }
+          ]
+        }
+      ],
+      "preLaunchTask": "Build bme680_read (NRF52)"
+    },
+
   ]
 }

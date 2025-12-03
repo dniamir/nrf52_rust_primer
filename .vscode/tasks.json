@@ -75,5 +75,23 @@
       }
     },
 
+    // Build for NRF52 BME680 chip reader
+    {
+      "label": "Build bme680_read (NRF52)",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "build",
+        "--bin",
+        "bme680_read",
+        "--target",
+        "thumbv7em-none-eabihf"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+
   ]
 }
