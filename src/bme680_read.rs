@@ -35,7 +35,7 @@ async fn blink(pin: Peri<'static, crate::peripherals::P0_13>) {
     }
 }
 
-// Async i2c
+// Async bme680 reads
 #[embassy_executor::task]
 async fn chip_read(i2c_bus: I2CMutex) {
 
@@ -103,8 +103,8 @@ async fn main(spawner: Spawner) {
     d_info!("Blinky Starting...");
     spawner.spawn(blink(p.P0_13)).unwrap();
     
-    // Spawn i2c scan task (runs concurrently in background)
-    d_info!("I2C Scan Starting...");
+    // Spawn bme680 task (runs concurrently in background)
+    d_info!("BME680 Read starting...");
     spawner.spawn(chip_read(i2c_mutex)).unwrap();
 
     let mut count = 0;
