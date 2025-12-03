@@ -7,11 +7,19 @@ use crate::{dlogger::DLogger, d_info};  // Logging
 
 use crate::chip_map;
 
+// Type alias for I2C bus
+pub type I2CMutex = &'static Mutex<ThreadModeRawMutex, Twim<'static>>;
+
 /// Define some error types
 #[derive(Debug)]
 pub enum I2CError {
     NotFound,
     I2CError(TwimError),
+}
+
+// Error conversion 
+impl From<TwimError> for I2CError {
+    fn from(err: TwimError) -> Self {I2CError::I2CError(err)}
 }
 
 pub struct Chip<I2C, MAP=chip_map::NoFieldMap> {
@@ -21,32 +29,31 @@ pub struct Chip<I2C, MAP=chip_map::NoFieldMap> {
 }
 
 impl <I2C> Chip<I2C, chip_map::NoFieldMap> {
-    pub fn new_generic(i2c: I2C, addr: u8) -> Self {
-        Self { i2c, i2c_addr: addr, _map: PhantomData }
+    pub fn new_generic(i2c: I2C, i2c_addr: u8) -> Self {
+        Self { i2c, i2c_addr: i2c_addr, _map: PhantomData }
     }
 }
 
 // MUTEX implementations for I2C generic - Any MAP
-impl<MAP> Chip<&'static Mutex<ThreadModeRawMutex, Twim<'static>>, MAP> {
+impl<MAP> Chip<I2CMutex, MAP> {
 
     pub async fn read_regs(&self, reg: u8, reg_values: &mut [u8]) -> Result<(), I2CError> {
         // Basic function to read multiple registers
         let mut i2c_bus = self.i2c.lock().await;
-        i2c_bus.write_read(self.i2c_addr, &[reg], reg_values).await.map_err(I2CError::I2CError)?;
+        i2c_bus.write_read(self.i2c_addr, &[reg], reg_values).await?;
 
         let mut reg_idx = 0;
         for reg_value in reg_values.iter() {
             d_info!("Read Register: 0x{=u8:X}, {=u8:b}, 0x{=u8:X}, {}", reg + reg_idx, reg_value, reg_value, reg_value);
             reg_idx += 1;
         }
-
         Ok(())
     }
 
     pub async fn write_reg(&self, reg: u8, reg_val: u8) -> Result<(), I2CError> {
         // Basic function to write a single register
         let mut i2c_bus = self.i2c.lock().await;
-        i2c_bus.write(self.i2c_addr, &[reg, reg_val]).await.map_err(I2CError::I2CError)?;
+        i2c_bus.write(self.i2c_addr, &[reg, reg_val]).await?;
         d_info!("Write Register: 0x{=u8:X}, {=u8:b}, 0x{=u8:X}, {}", reg, reg_val, reg_val, reg_val);
         Ok(())
     }
@@ -67,7 +74,7 @@ impl<MAP> Chip<&'static Mutex<ThreadModeRawMutex, Twim<'static>>, MAP> {
 }
 
 // MUTEX implementations for I2C generic - Defined Map using chip_map
-impl<MAP> Chip<&'static Mutex<ThreadModeRawMutex, Twim<'static>>, MAP>
+impl<MAP> Chip<I2CMutex, MAP>
 where
     MAP: chip_map::FieldMapProvider,
 {

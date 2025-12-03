@@ -11,7 +11,7 @@ use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
 use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::{self as _, led::Led, chip::Chip};
+use nrf52_rust_primer::{self as _, led::Led, chip::Chip, chip::I2CMutex};
 use nrf52_rust_primer::d_info;  // Logging
 
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
@@ -37,7 +37,7 @@ async fn blink(pin: Peri<'static, crate::peripherals::P0_13>) {
 
 // Async i2c
 #[embassy_executor::task]
-async fn chip_read(i2c_bus: &'static Mutex<ThreadModeRawMutex, Twim<'static>>) {
+async fn chip_read(i2c_bus: I2CMutex) {
 
     // Do some simple chip reads
     d_info!("Setting up chip");
