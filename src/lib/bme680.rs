@@ -189,6 +189,30 @@ impl BME680<I2CMutex, Chip<I2CMutex, BME680FieldMap>> {
         Ok(temp_comp)
     }
 
+    pub async fn read_pressure(&mut self) -> Result<u32, BME680Error> {
+
+        // Lock logger while this is being run
+        DLogger::hold();
+        self.chip.write_field("mode", 0b01).await?;
+
+        // Read Pressure
+        let mut press_out = [0u8; 3];
+        self.chip.read_regs_str("press_msb", &mut press_out).await?;
+        DLogger::release();
+
+        // Bit Shift and Calibrate Value
+        let press_adc: u32 = 
+            ((press_out[0] as u32) << 12) | 
+            ((press_out[1] as u32) << 4) | 
+            ((press_out[2] as u32) >> 4);
+        let press_comp = self.calibrate_pressure(press_adc);
+
+        // Log pressure
+        d_info!("Pressure: {} Pa", press_comp);
+        
+        Ok(press_comp)
+    }
+
     pub fn calibrate_temperature(&mut self, temp_adc: u32) -> i32 {
         // Calibration constants
         let par_t1 = self.cal_codes.par_t1; // i16
@@ -208,6 +232,63 @@ impl BME680<I2CMutex, Chip<I2CMutex, BME680FieldMap>> {
         self.temp_comp = temp_comp;
 
         temp_comp
+    }
+
+    pub fn calibrate_pressure(&mut self, press_adc: u32) -> u32 {
+        let par_p1 = self.cal_codes.par_p1;
+        let par_p2 = self.cal_codes.par_p2;
+        let par_p3 = self.cal_codes.par_p3;
+        let par_p4 = self.cal_codes.par_p4;
+        let par_p5 = self.cal_codes.par_p5;
+        let par_p6 = self.cal_codes.par_p6;
+        let par_p7 = self.cal_codes.par_p7;
+        let par_p8 = self.cal_codes.par_p8;
+        let par_p9 = self.cal_codes.par_p9;
+        let par_p10 = self.cal_codes.par_p10;
+
+        let mut var1: i32;
+        let mut var2: i32;
+        let var3: i32;
+        let mut press_comp: i32;
+
+        let t_fine = self.t_fine;
+
+        var1 = (t_fine >> 1) - 64000;
+
+        var2 = ((((var1 >> 2) * (var1 >> 2)) >> 11) * (par_p6 as i32)) >> 2;
+        var2 += (var1 * (par_p5 as i32)) << 1;
+        var2 = (var2 >> 2) + ((par_p4 as i32) << 16);
+
+        var1 = (((((var1 >> 2) * (var1 >> 2)) >> 13) *
+            ((par_p3 as i32) << 5)) >> 3)
+            + (((par_p2 as i32) * var1) >> 1);
+
+        var1 >>= 18;
+        var1 = ((32768 + var1) * (par_p1 as i32)) >> 15;
+
+        press_comp = 1048576 - press_adc as i32;
+        press_comp = ((press_comp - (var2 >> 12)) * 3125) as i32;
+
+        if press_comp >= (1 << 30) {
+            press_comp = (press_comp / var1) << 1;
+        } else {
+            press_comp = (press_comp << 1) / var1;
+        }
+
+        var1 = ((par_p9 as i32)
+            * (((press_comp >> 3) * (press_comp >> 3)) >> 13)) >> 12;
+
+        var2 = ((press_comp >> 2) * (par_p8 as i32)) >> 13;
+
+        var3 = ((press_comp >> 8)
+            * (press_comp >> 8)
+            * (press_comp >> 8)
+            * (par_p10 as i32)) >> 17;
+
+        press_comp = press_comp
+            + ((var1 + var2 + var3 + ((par_p7 as i32) << 7)) >> 4);
+
+        press_comp as u32
     }
 }
 

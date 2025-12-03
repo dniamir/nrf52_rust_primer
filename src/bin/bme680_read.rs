@@ -53,34 +53,35 @@ async fn chip_read(i2c_bus: I2CMutex) {
 
         d_info!("========");
 
-        bme.chip.write_reg(0x74, 0b11100011).await.unwrap();
-        bme.chip.read_reg(0x74).await.unwrap();
-        bme.chip.read_field("osrs_t").await.unwrap();
+        // bme.chip.write_reg(0x74, 0b11100011).await.unwrap();
+        // bme.chip.read_reg(0x74).await.unwrap();
+        // bme.chip.read_field("osrs_t").await.unwrap();
 
-        d_info!("========");
+        // d_info!("========");
 
-        bme.chip.write_reg(0x74, 0b00011100).await.unwrap();
-        bme.chip.read_reg(0x74).await.unwrap();
-        bme.chip.read_field("osrs_t").await.unwrap();
+        // bme.chip.write_reg(0x74, 0b00011100).await.unwrap();
+        // bme.chip.read_reg(0x74).await.unwrap();
+        // bme.chip.read_field("osrs_t").await.unwrap();
 
-        d_info!("========");
+        // d_info!("========");
 
-        bme.chip.write_field("osrs_t", 0b101).await.unwrap();
-        bme.chip.read_field("osrs_t").await.unwrap();
+        // bme.chip.write_field("osrs_t", 0b101).await.unwrap();
+        // bme.chip.read_field("osrs_t").await.unwrap();
 
-        d_info!("========");
+        // d_info!("========");
 
-        bme.chip.write_reg_str("osrs_t", 0b101).await.unwrap();
-        bme.chip.read_reg_str("osrs_t").await.unwrap();
+        // bme.chip.write_reg_str("osrs_t", 0b101).await.unwrap();
+        // bme.chip.read_reg_str("osrs_t").await.unwrap();
 
-        d_info!("========");
+        // d_info!("========");
 
-        let reg_vals = &mut [0u8; 4];
-        bme.chip.read_regs_str("Ctrl_hum", reg_vals).await.unwrap();
+        // let reg_vals = &mut [0u8; 4];
+        // bme.chip.read_regs_str("Ctrl_hum", reg_vals).await.unwrap();
 
         d_info!("========");
 
         bme.read_temperature().await.unwrap();
+        bme.read_pressure().await.unwrap();
 
         d_info!("========");
 
