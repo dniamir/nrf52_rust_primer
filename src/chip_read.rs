@@ -17,7 +17,7 @@ use nrf52_rust_primer::d_info;  // Logging
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 
 // Static I2C bus protected by a Mutex for sharing between tasks
-static I2C_BUS: StaticCell<Mutex<ThreadModeRawMutex, Twim<'static>>> = StaticCell::new();
+static I2C_MUTEX: StaticCell<Mutex<ThreadModeRawMutex, Twim<'static>>> = StaticCell::new();
 static TX_BUF: StaticCell<[u8; 32]> = StaticCell::new();
 
 // Declare async tasks
@@ -80,8 +80,8 @@ async fn main(spawner: Spawner) {
     // Initialize I2C bus
     let config = twim::Config::default();
     let tx_buf = TX_BUF.init([0u8; 32]);
-    let i2c = Twim::new(p.TWISPI0, Irqs, p.P0_27, p.P0_26, config, tx_buf);
-    let i2c_bus = I2C_BUS.init(Mutex::new(i2c));
+    let i2c_bus = Twim::new(p.TWISPI0, Irqs, p.P0_27, p.P0_26, config, tx_buf);
+    let i2c_mutex = I2C_MUTEX.init(Mutex::new(i2c_bus));
 
     // Spawn LED blink task (runs concurrently in background)
     d_info!("Blinky Starting...");
@@ -89,7 +89,7 @@ async fn main(spawner: Spawner) {
     
     // Spawn i2c scan task (runs concurrently in background)
     d_info!("I2C Scan Starting...");
-    spawner.spawn(chip_read(i2c_bus)).unwrap();
+    spawner.spawn(chip_read(i2c_mutex)).unwrap();
 
     let mut count = 0;
 
