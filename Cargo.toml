@@ -7,22 +7,6 @@ default = ["nrf"]      # "nrf" is enabled by default
 nrf = ["embassy-nrf"]
 stm32 = ["embassy-stm32"]
 
-[[bin]]
-name = "blinky"
-path = "src/blinky.rs"
-
-[[bin]]
-name = "i2c_scan"
-path = "src/i2c_scan.rs"
-
-[[bin]]
-name = "chip_read"
-path = "src/chip_read.rs"
-
-[[bin]]
-name = "bme680_read"
-path = "src/bme680_read.rs"
-
 [profile.dev]
 debug = 2
 opt-level = 1

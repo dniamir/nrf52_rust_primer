@@ -85,7 +85,7 @@ async fn chip_read(i2c_bus: I2CMutex) {
         d_info!("========");
 
         // Wait before next scan
-        Timer::after_secs(3).await;
+        Timer::after_secs(1).await;
     }
 }
 
@@ -93,15 +93,18 @@ async fn chip_read(i2c_bus: I2CMutex) {
 async fn main(spawner: Spawner) {
     let p: nrf52_rust_primer::hal::Peripherals = nrf52_rust_primer::hal::init(Default::default());
     
+    // Initialize I2C bus config
+    let mut config = twim::Config::default();
+    config.frequency = twim::Frequency::K100;
+
     // Initialize I2C bus
-    let config = twim::Config::default();
     let tx_buf = TX_BUF.init([0u8; 32]);
     let i2c_bus = Twim::new(p.TWISPI0, Irqs, p.P0_27, p.P0_26, config, tx_buf);
     let i2c_mutex = I2C_MUTEX.init(Mutex::new(i2c_bus));
 
     // Spawn LED blink task (runs concurrently in background)
     d_info!("Blinky Starting...");
-    spawner.spawn(blink(p.P0_13)).unwrap();
+    // spawner.spawn(blink(p.P0_13)).unwrap();
     
     // Spawn bme680 task (runs concurrently in background)
     d_info!("BME680 Read starting...");
@@ -112,6 +115,6 @@ async fn main(spawner: Spawner) {
     loop {
         count += 1;
         d_info!("Count: {}", count);
-        Timer::after_secs(1).await;
+        Timer::after_secs(100).await;
     }
 }
