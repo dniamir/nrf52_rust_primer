@@ -11,8 +11,13 @@ use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
 use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::{self as _, led::Led, chip::I2CMutex, bme680::BME680};
+use nrf52_rust_primer::{self as _, led::Led, bme680::BME680};
+use nrf52_rust_primer::chip::I2CMutexWrapper;
+
 use nrf52_rust_primer::d_info;  // Logging
+
+// Type alias for I2C bus
+pub type I2CMutex = &'static Mutex<ThreadModeRawMutex, Twim<'static>>;
 
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 
@@ -37,7 +42,7 @@ async fn blink(pin: Peri<'static, crate::peripherals::P0_13>) {
 
 // Async bme680 reads
 #[embassy_executor::task]
-async fn chip_read(i2c_bus: I2CMutex) {
+async fn chip_read(i2c_bus: I2CMutexWrapper) {
 
     // Do some simple chip reads
     d_info!("Setting up BME680");
@@ -102,6 +107,7 @@ async fn main(spawner: Spawner) {
     let tx_buf = TX_BUF.init([0u8; 32]);
     let i2c_bus = Twim::new(p.TWISPI0, Irqs, p.P0_27, p.P0_26, config, tx_buf);
     let i2c_mutex = I2C_MUTEX.init(Mutex::new(i2c_bus));
+    let i2c_mutex_wrapper = I2CMutexWrapper(i2c_mutex);
 
     // Spawn LED blink task (runs concurrently in background)
     d_info!("Blinky Starting...");
@@ -109,7 +115,7 @@ async fn main(spawner: Spawner) {
     
     // Spawn bme680 task (runs concurrently in background)
     d_info!("BME680 Read starting...");
-    spawner.spawn(chip_read(i2c_mutex)).unwrap();
+    spawner.spawn(chip_read(i2c_mutex_wrapper)).unwrap();
 
     let mut count = 0;
 

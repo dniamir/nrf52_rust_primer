@@ -4,11 +4,7 @@ use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
 use crate::hal::twim::{Twim, Error as TwimError};
 use crate::{dlogger::DLogger, d_info};  // Logging
-
 use crate::chip_map;
-
-// Type alias for I2C bus
-pub type I2CMutex = &'static Mutex<ThreadModeRawMutex, Twim<'static>>;
 
 /// Define some error types
 #[derive(Debug)]
@@ -22,6 +18,30 @@ impl From<TwimError> for I2CError {
     fn from(err: TwimError) -> Self {I2CError::I2CError(err)}
 }
 
+// Generic I2C trait definitions
+pub trait I2CProvider {
+    async fn write_read(&self, i2c_address: u8, reg: u8, reg_vals: &mut [u8]) -> Result<(), I2CError>;
+    async fn write(&self, i2c_address: u8, reg: u8, reg_val: u8) -> Result<(), I2CError>;
+}
+
+// Trait defined for embassy I2C mutex
+pub struct I2CMutexWrapper(pub &'static Mutex<ThreadModeRawMutex, Twim<'static>>);
+
+impl I2CProvider for I2CMutexWrapper {
+    async fn write_read(&self, i2c_address: u8, reg: u8, reg_vals: &mut [u8]) -> Result<(), I2CError> {
+        let mut twim = self.0.lock().await;
+        twim.write_read(i2c_address, &[reg], reg_vals).await?;
+        Ok(())
+    }
+
+    async fn write(&self, i2c_address: u8, reg: u8, reg_val: u8) -> Result<(), I2CError> {
+        let mut twim = self.0.lock().await;
+        twim.write(i2c_address, &[reg, reg_val]).await?;
+        Ok(())
+    }
+}
+
+// Struct definition
 pub struct Chip<I2C, MAP=chip_map::NoFieldMap> {
     pub i2c: I2C,  // Can be a mutex (supported) or an I2C bus (not supported)
     pub i2c_addr: u8,
@@ -35,12 +55,14 @@ impl <I2C> Chip<I2C, chip_map::NoFieldMap> {
 }
 
 // MUTEX implementations for I2C generic - Any MAP
-impl<MAP> Chip<I2CMutex, MAP> {
+impl<I2C, MAP,> Chip<I2C, MAP> 
+where
+    I2C: I2CProvider,
+{
 
     pub async fn read_regs(&self, reg: u8, reg_values: &mut [u8]) -> Result<(), I2CError> {
         // Basic function to read multiple registers
-        let mut i2c_bus = self.i2c.lock().await;
-        i2c_bus.write_read(self.i2c_addr, &[reg], reg_values).await?;
+        self.i2c.write_read(self.i2c_addr, reg, reg_values).await?;
 
         let mut reg_idx = 0;
         for reg_value in reg_values.iter() {
@@ -52,8 +74,7 @@ impl<MAP> Chip<I2CMutex, MAP> {
 
     pub async fn write_reg(&self, reg: u8, reg_val: u8) -> Result<(), I2CError> {
         // Basic function to write a single register
-        let mut i2c_bus = self.i2c.lock().await;
-        i2c_bus.write(self.i2c_addr, &[reg, reg_val]).await?;
+        self.i2c.write(self.i2c_addr, reg, reg_val).await?;
         d_info!("Write Register: 0x{=u8:X}, {=u8:b}, 0x{=u8:X}, {}", reg, reg_val, reg_val, reg_val);
         Ok(())
     }
@@ -74,8 +95,9 @@ impl<MAP> Chip<I2CMutex, MAP> {
 }
 
 // MUTEX implementations for I2C generic - Defined Map using chip_map
-impl<MAP> Chip<I2CMutex, MAP>
+impl<I2C, MAP,> Chip<I2C, MAP> 
 where
+    I2C: I2CProvider,
     MAP: chip_map::FieldMapProvider,
 {
 

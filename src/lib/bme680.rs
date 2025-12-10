@@ -2,7 +2,7 @@ use heapless::String;
 use core::marker::PhantomData;
 use core::fmt::Write;
 
-use crate::chip::{Chip, I2CMutex, I2CError};
+use crate::chip::{Chip, I2CProvider, I2CError};
 use crate::chip_map::{Field, FieldMapProvider};
 use crate::{dlogger::DLogger, d_info};  // Logging
 
@@ -31,12 +31,15 @@ pub struct BME680<I2C, ChipGeneric=Chip<I2C, BME680FieldMap>> {
 }
 
 // When Chip is defined using the BME680 FieldMap
-impl BME680<I2CMutex, Chip<I2CMutex, BME680FieldMap>> {
+impl <I2C> BME680<I2C, Chip<I2C, BME680FieldMap>> 
+where
+    I2C: I2CProvider,
+{
 
     // Constructor for when a Chip is not given
-    pub async fn new(i2c: I2CMutex, i2c_addr: u8) -> Result<Self, BME680Error> {
+    pub async fn new(i2c: I2C, i2c_addr: u8) -> Result<Self, BME680Error> {
 
-        let chip: Chip<I2CMutex, BME680FieldMap> = Chip{i2c, i2c_addr, _map: PhantomData};
+        let chip: Chip<I2C, BME680FieldMap> = Chip{i2c, i2c_addr, _map: PhantomData};
 
         let mut this = Self {
             chip,
