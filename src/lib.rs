@@ -36,6 +36,9 @@ pub mod led;
 #[path = "lib/chip.rs"]
 pub mod chip;
 
+#[path = "lib/chip_implementations.rs"]
+pub mod chip_implementations;
+
 #[path = "lib/chip_map.rs"]
 pub mod chip_map;
 
