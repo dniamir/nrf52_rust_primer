@@ -18,6 +18,7 @@ impl From<TwimError> for I2CError {
 }
 
 // Generic I2C trait definitions
+#[allow(async_fn_in_trait)]  // Have to surpress warning, or else have to explicitely define output as a future, which is cumbersome
 pub trait I2CProvider {
     async fn write_read(&self, i2c_address: u8, reg: u8, reg_vals: &mut [u8]) -> Result<(), I2CError>;  
     async fn write(&self, i2c_address: u8, reg: u8, reg_val: u8) -> Result<(), I2CError>;
