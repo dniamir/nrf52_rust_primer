@@ -11,6 +11,7 @@ fn main() {
 
     // Always regenerate memory.x
     let _ = fs::remove_file("memory.x");
+    let _ = fs::copy("./memory/memory_blank.x", "memory.x");
 
     // Decide which memory layout to use
     let memory_file = if cfg!(feature = "ble_memory") {
