@@ -3,9 +3,14 @@ edition = "2024"
 name = "nrf52_rust_primer"
 
 [features]
-default = ["nrf"]      # "nrf" is enabled by default
+# For HAL Library
+default = ["nrf", "default_memory"]     # Default features
 nrf = ["embassy-nrf"]
 stm32 = ["embassy-stm32"]
+
+# For Memory
+default_memory = []                     # When the brackets have no contents, it's just a switch to be used in build.rs
+ble_memory = []
 
 [profile.dev]
 debug = 2
@@ -13,6 +18,11 @@ opt-level = 1
 
 [profile.release]
 debug = 2
+
+[[bin]]
+name = "bme680_ble_notify"
+path = "src/bin/bme680_ble_notify.rs"
+required-features = ["ble_memory"]
 
 [dependencies]
 

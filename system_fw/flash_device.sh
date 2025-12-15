@@ -4,7 +4,7 @@ SOFTDEVICE_HEX="./system_fw/s140_nrf52_7.3.0/s140_nrf52_7.3.0_softdevice.hex"
 
 CHIP_NAME="nrf52840_xxAA" # Adjust to your specific chip
 
-if [ "$1" == "--ble-program" ]; then
+if [ "$1" == "--ble-program-nrf52" ]; then
     echo "BLE program detected. Flashing SoftDevice..."
     # Use probe-rs to erase and flash the softdevice
     # The --allow-erase-all is often needed for the first time

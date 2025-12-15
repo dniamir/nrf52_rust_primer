@@ -3,6 +3,14 @@
 
   "tasks": [
 
+    // Task for loading BLE memory config using SoftDevice
+    {
+      "label": "Ensure SoftDevice (nRF52)",
+      "type": "shell",
+      "command": "${workspaceFolder}/system_fw/flash_device.sh",
+      "args": ["--ble-program-nrf52"]
+    },
+
     // Build for nRF52 Blinky
     {
       "label": "Build blinky (nRF52)",
