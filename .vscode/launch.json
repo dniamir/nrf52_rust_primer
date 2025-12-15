@@ -157,5 +157,35 @@
       "preLaunchTask": "Build bme680_read (nRF52)"
     },
 
+    // Debug for bme680_ble_notify
+    {
+      "name": "Debug basic_ble_advertise (nRF52)",
+      "type": "probe-rs-debug",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "probe": "1366:1015",
+      "chip": "nrf52840_xxAA",
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "resetAfterFlashing": true,
+        "haltAfterReset": false,
+      },
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/basic_ble_advertise",
+          "rttEnabled": true,
+          "rttChannelFormats": [
+            {
+              "channelNumber": 0,
+              "dataFormat": "Defmt",
+              "showTimestamps": true
+            }
+          ]
+        }
+      ],
+      "preLaunchTask": "Build basic_ble_advertise (nRF52)"
+    },
+
   ]
 }

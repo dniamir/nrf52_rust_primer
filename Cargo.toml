@@ -20,8 +20,8 @@ opt-level = 1
 debug = 2
 
 [[bin]]
-name = "bme680_ble_notify"
-path = "src/bin/bme680_ble_notify.rs"
+name = "basic_ble_advertise"
+path = "src/bin/basic_ble_advertise.rs"
 required-features = ["ble_memory"]
 
 [dependencies]
@@ -37,6 +37,10 @@ embassy-time = { version = "0.5.0", features = ["defmt", "defmt-timestamp-uptime
 embassy-nrf = { version = "0.8.0", features = ["defmt", "nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac", "time", "net-driver"], optional = true}
 embassy-stm32 = { version = "0.4.0", features = ["defmt", "stm32f411ce", "time-driver-any", "exti", "unstable-pac", "time"], optional = true}
 embassy-hal-internal = { version = "0.3.0" }
+
+# BLE
+# Soft device version given here - https://docs.nordicsemi.com/bundle/ug_gsg_ses/page/UG/gsg/softdevices.html
+nrf-softdevice = {git="https://github.com/embassy-rs/nrf-softdevice", branch="master", features=["ble-peripheral", "s140", "nrf52840", "defmt"]}
 
 # Logging libraries
 defmt = "1.0.1"           # Logging framework
