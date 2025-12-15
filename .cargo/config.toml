@@ -1,11 +1,11 @@
 [target.thumbv7em-none-eabihf]
-runner = 'probe-rs run --chip nrf52840_xxAA'
+runner = 'probe-rs run --chip nrf52840_xxAA'          # Instead of running on my computer, use probe-rs to rlash the binary, reset chip and run on nRF52840
 rustflags = [
-  "-C", "link-arg=-Tdefmt.x",
+"-C", "link-arg=-Tdefmt.x",                           # Reserves RTT bufers in RAM
 ]
 
-[build]
-target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
+[build]  
+target = "thumbv7em-none-eabihf"                      # This makes "cargo build" add this string as "--target" - which is ARM Cortex-M4F
 
 [env]
 DEFMT_LOG = "info"
