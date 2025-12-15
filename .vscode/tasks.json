@@ -3,9 +3,9 @@
 
   "tasks": [
 
-    // Build for NRF52 Blinky
+    // Build for nRF52 Blinky
     {
-      "label": "Build blinky (NRF52)",
+      "label": "Build blinky (nRF52)",
       "type": "shell",
       "command": "cargo",
       "args": [
@@ -39,9 +39,9 @@
       "group": "build"
     },
 
-        // Build for NRF52 I2C Scanner
+        // Build for nRF52 I2C Scanner
     {
-      "label": "Build i2c_scan (NRF52)",
+      "label": "Build i2c_scan (nRF52)",
       "type": "shell",
       "command": "cargo",
       "args": [
@@ -57,9 +57,9 @@
       }
     },
 
-    // Build for NRF52 Chip Reader
+    // Build for nRF52 Chip Reader
     {
-      "label": "Build chip_read (NRF52)",
+      "label": "Build chip_read (nRF52)",
       "type": "shell",
       "command": "cargo",
       "args": [
@@ -75,9 +75,9 @@
       }
     },
 
-    // Build for NRF52 BME680 chip reader
+    // Build for nRF52 BME680 chip reader
     {
-      "label": "Build bme680_read (NRF52)",
+      "label": "Build bme680_read (nRF52)",
       "type": "shell",
       "command": "cargo",
       "args": [

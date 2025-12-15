@@ -2,9 +2,9 @@
   "version": "0.2.0",
   "configurations": [
 
-    // Debug for Blinky (NRF52)
+    // Debug for Blinky (nRF52)
     {
-      "name": "Debug blinky (NRF52)",
+      "name": "Debug blinky (nRF52)",
       "type": "probe-rs-debug",
       "request": "launch",
       "cwd": "${workspaceFolder}",
@@ -30,7 +30,7 @@
           ]
         }
       ],
-      "preLaunchTask": "Build blinky (NRF52)"
+      "preLaunchTask": "Build blinky (nRF52)"
     },
 
     // Debug for blinky (STM32)
@@ -66,7 +66,7 @@
 
     // Debug for i2c_scan
     {
-      "name": "Debug i2c_scan (NRF52)",
+      "name": "Debug i2c_scan (nRF52)",
       "type": "probe-rs-debug",
       "request": "launch",
       "cwd": "${workspaceFolder}",
@@ -92,12 +92,12 @@
           ]
         }
       ],
-      "preLaunchTask": "Build i2c_scan (NRF52)"
+      "preLaunchTask": "Build i2c_scan (nRF52)"
     },
 
     // Debug for chip_read
     {
-      "name": "Debug chip_read (NRF52)",
+      "name": "Debug chip_read (nRF52)",
       "type": "probe-rs-debug",
       "request": "launch",
       "cwd": "${workspaceFolder}",
@@ -123,12 +123,12 @@
           ]
         }
       ],
-      "preLaunchTask": "Build chip_read (NRF52)"
+      "preLaunchTask": "Build chip_read (nRF52)"
     },
 
     // Debug for bme680_read
     {
-      "name": "Debug bme680_read (NRF52)",
+      "name": "Debug bme680_read (nRF52)",
       "type": "probe-rs-debug",
       "request": "launch",
       "cwd": "${workspaceFolder}",
@@ -154,7 +154,7 @@
           ]
         }
       ],
-      "preLaunchTask": "Build bme680_read (NRF52)"
+      "preLaunchTask": "Build bme680_read (nRF52)"
     },
 
   ]
