@@ -48,5 +48,5 @@ pub mod dlogger;
 #[path = "lib/bme680.rs"]
 pub mod bme680;
 
-#[path = "lib/nrf_ble.rs"]
+#[path = "lib/ble/nrf_ble.rs"]
 pub mod nrf_ble;
