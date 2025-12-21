@@ -101,7 +101,7 @@
       }
     },
 
-    // Build for nRF52840 BLE notify
+    // Build for nRF52840 BLE advertise
     {
       "label": "Build basic_ble_advertise (nRF52)",
       "type": "shell",
@@ -111,6 +111,27 @@
         "build",
         "--bin",
         "basic_ble_advertise",
+        "--target",
+        "thumbv7em-none-eabihf",
+        "--features",
+        "ble_memory",
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+
+    // Build for nRF52840 BLE characteristic
+    {
+      "label": "Build ble_char (nRF52)",
+      "type": "shell",
+      "command": "cargo",
+      "dependsOn": ["Ensure SoftDevice (nRF52)"],
+      "args": [
+        "build",
+        "--bin",
+        "ble_char",
         "--target",
         "thumbv7em-none-eabihf",
         "--features",

@@ -157,7 +157,7 @@
       "preLaunchTask": "Build bme680_read (nRF52)"
     },
 
-    // Debug for bme680_ble_notify
+    // Debug for BLE advertisement
     {
       "name": "Debug basic_ble_advertise (nRF52)",
       "type": "probe-rs-debug",
@@ -185,6 +185,36 @@
         }
       ],
       "preLaunchTask": "Build basic_ble_advertise (nRF52)"
+    },
+
+    // Debug for BLE characteristic
+    {
+      "name": "Debug ble_char (nRF52)",
+      "type": "probe-rs-debug",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "probe": "1366:1015",
+      "chip": "nrf52840_xxAA",
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "resetAfterFlashing": true,
+        "haltAfterReset": false,
+      },
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabihf/debug/ble_char",
+          "rttEnabled": true,
+          "rttChannelFormats": [
+            {
+              "channelNumber": 0,
+              "dataFormat": "Defmt",
+              "showTimestamps": true
+            }
+          ]
+        }
+      ],
+      "preLaunchTask": "Build ble_char (nRF52)"
     },
 
   ]
