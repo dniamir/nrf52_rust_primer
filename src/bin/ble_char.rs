@@ -36,7 +36,7 @@ async fn main(spawner: Spawner) {
         let conn = ble.advertise(true).await.unwrap();
 
         // Code for updating service characteristic
-        let mut count: u16 = 0;
+        let mut count: i32 = 0;
         let update_fut = async {
             loop {
                 Timer::after_millis(1000).await;

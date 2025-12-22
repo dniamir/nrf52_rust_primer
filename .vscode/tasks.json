@@ -143,5 +143,26 @@
       }
     },
 
+    // Build for nRF52840 BLE BME characteristic
+    {
+      "label": "Build ble_bme_char (nRF52)",
+      "type": "shell",
+      "command": "cargo",
+      "dependsOn": ["Ensure SoftDevice (nRF52)"],
+      "args": [
+        "build",
+        "--bin",
+        "ble_bme_char",
+        "--target",
+        "thumbv7em-none-eabihf",
+        "--features",
+        "ble_memory",
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+
   ]
 }

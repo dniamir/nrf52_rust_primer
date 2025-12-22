@@ -16,11 +16,11 @@ pub struct SensorService {
 
     #[characteristic(uuid = "9e7312e0-2354-11eb-9f10-fbc30a63cf41", read, notify)]
     #[descriptor(uuid="2901", value="temperature_c")]  // Doesn't seem to do anything
-    pub temperature_c: u16,
+    pub temperature_c: i32,
 
     #[characteristic(uuid = "9e7312e0-2354-11eb-9f10-fbc30a63cf42", read, notify)]
     #[descriptor(uuid="2901", value="pressure_pa")]  // Doesn't seem to do anything
-    pub pressure_pa: u16,
+    pub pressure_pa: u32,
 }
 
 // GATT SERVER (there can only be one)
