@@ -1,3 +1,7 @@
+use core::sync::atomic::Ordering;
+use embassy_time::Timer;
+use core::sync::atomic::{AtomicI32, AtomicU32};
+
 use nrf_softdevice::ble::gatt_server;
 use crate::d_info;  // Logging
 
@@ -58,5 +62,31 @@ fn handle_ble_event(e: BLEServerEvent) {
                 d_info!("pressure_c notifications: {}", notifications);
             }
         },
+    }
+}
+
+pub async fn update_temperature(server: &BLEServer, atomic: &AtomicI32) {
+    loop {
+        Timer::after_millis(1000).await;
+
+        let char_val = atomic.load(Ordering::Relaxed);
+
+        let _ = server.sensor_service.temperature_c_set(&char_val);
+        d_info!("Updated temperature_c characteristic: {}", char_val);
+
+        d_info!("========");
+    }
+}
+
+pub async fn update_pressure(server: &BLEServer, atomic: &AtomicU32) {
+    loop {
+        Timer::after_millis(1000).await;
+
+        let char_val = atomic.load(Ordering::Relaxed);
+
+        let _ = server.sensor_service.pressure_pa_set(&char_val);
+        d_info!("Updated pressure_pa characteristic: {}", char_val);
+
+        d_info!("========");
     }
 }

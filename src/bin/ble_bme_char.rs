@@ -6,23 +6,25 @@ use static_cell::StaticCell;
 use core::sync::atomic::Ordering;
 use core::sync::atomic::{AtomicI32, AtomicU32};
 
-use nrf52_rust_primer::hal as _; // time driver
 use embassy_executor::Spawner;
 use embassy_time::Timer;
 use embassy_futures::select::{select, Either};
+use embassy_futures::join::join;
 
 use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
+use nrf52_rust_primer::hal as _; // time driver
 use nrf52_rust_primer::hal::interrupt::Priority;
 
-use nrf52_rust_primer::{self as _, ble_services};
+use nrf52_rust_primer;
 use nrf52_rust_primer::nrf_ble::BLEWrapper;
 use nrf52_rust_primer::ble_services::*;
+use nrf52_rust_primer::ble_services;
 use nrf52_rust_primer::d_info;  // Logging
 
 use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::{self as _, bme680::BME680};
+use nrf52_rust_primer::bme680::BME680;
 use nrf52_rust_primer::chip_implementations::I2CMutexWrapper;
 
 // Static I2C bus protected by a Mutex for sharing between tasks
@@ -69,7 +71,7 @@ async fn main(spawner: Spawner) {
     d_info!("Main script starting!");
 
     // Very finicky - HAL interrupts have to be given lower priority than softdeivce
-    // this block needs to come before softdevice is enabled
+    // this block needs to come before SoftDevice is enabled
     let mut ecfg = nrf52_rust_primer::hal::config::Config::default();
     ecfg.gpiote_interrupt_priority = Priority::P2;
     ecfg.time_interrupt_priority   = Priority::P2; // for time-driver-rtc1
@@ -102,32 +104,17 @@ async fn main(spawner: Spawner) {
         let conn = ble.advertise(true).await.unwrap();
 
         // Code for updating service characteristic
-        let mut count: i32 = 0;
-        let update_fut = async {
-            loop {
-                Timer::after_millis(1000).await;
-                count += 1;
-
-                // Reach channel values
-                let temp_val = TEMP_VAL.load(Ordering::Relaxed);
-                let pressure_val = PRESSURE_VAL.load(Ordering::Relaxed);
-
-                // Set characteristic value
-                let _ = server.sensor_service.temperature_c_set(&temp_val);
-                d_info!("Updated temperature characteristic: {}", temp_val);
-
-                let _ = server.sensor_service.pressure_pa_set(&pressure_val);
-                d_info!("Updated pressure characteristic: {}", pressure_val);
-
-                d_info!("========");
-            }
-        };
+        // This joins multiple futures into 1
+        let update_characteristics = join(
+            ble_services::update_temperature(&server, &TEMP_VAL),
+            ble_services::update_pressure(&server, &PRESSURE_VAL),
+        );
         
         // Run the GATT server on the connection. This returns when the connection gets disconnected.
         let gatt_server_fut = ble_services::my_gatt_server(&conn, &server);
 
         // These are both async functions
-        match select(gatt_server_fut, update_fut).await {
+        match select(gatt_server_fut, update_characteristics).await {
             Either::First(e) => d_info!("Device disonnected: {:?}", e),     // If the first passed future finishes first
             Either::Second(_) => {},                                            // If the second passed future finished first (is an infite loop, should never finish)
         };
