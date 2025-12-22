@@ -1,86 +1,20 @@
 #![no_std]
 #![no_main]
 
-use defmt_rtt as _; // global logger
-use embassy_nrf as _; // time driver
-use nrf52_rust_primer as _;
-
-use core::mem;
-
-use defmt::{info, *};
+use nrf52_rust_primer::hal as _; // time driver
 use embassy_executor::Spawner;
 use embassy_time::Timer;
 use embassy_futures::select::{select, Either};
-use embassy_nrf::interrupt::Priority;
+use nrf52_rust_primer::hal::interrupt::Priority;
 
-use nrf_softdevice::ble::advertisement_builder::{
-    Flag, LegacyAdvertisementBuilder, LegacyAdvertisementPayload, ServiceList, ServiceUuid16,
-};
-use nrf_softdevice::ble::{gatt_server, peripheral};
-use nrf_softdevice::{raw, Softdevice};
-
-#[embassy_executor::task]
-async fn softdevice_task(sd: &'static Softdevice) -> ! {
-    sd.run().await
-}
-
-#[nrf_softdevice::gatt_service(uuid = "180f")]
-struct BatteryService {
-    #[characteristic(uuid = "2a19", read, notify)]
-    battery_level: u8,
-
-    #[characteristic(uuid = "9e7312e0-2354-11eb-9f10-fbc30a63cf39", read, notify)]
-    #[descriptor(uuid = "2901", value = "Darien Level")]
-    darien_level: u16,
-}
-
-#[nrf_softdevice::gatt_service(uuid = "9e7312e0-2354-11eb-9f10-fbc30a62cf38")]
-struct FooService {
-    #[characteristic(uuid = "9e7312e0-2354-11eb-9f10-fbc30a63cf38", read, write, notify, indicate)]
-    foo: u16,
-}
-
-#[nrf_softdevice::gatt_server]
-struct Server {
-    bas: BatteryService,
-    foo: FooService,
-}
+use nrf52_rust_primer::{self as _, ble_services};
+use nrf52_rust_primer::nrf_ble::BLEWrapper;
+use nrf52_rust_primer::ble_services::*;
+use nrf52_rust_primer::d_info;  // Logging
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
-    info!("Hello World!");
-
-    let config = nrf_softdevice::Config {
-        clock: Some(raw::nrf_clock_lf_cfg_t {
-            source: raw::NRF_CLOCK_LF_SRC_RC as u8,
-            rc_ctiv: 16,
-            rc_temp_ctiv: 2,
-            accuracy: raw::NRF_CLOCK_LF_ACCURACY_500_PPM as u8,
-        }),
-        conn_gap: Some(raw::ble_gap_conn_cfg_t {
-            conn_count: 6,
-            event_length: 24,
-        }),
-        conn_gatt: Some(raw::ble_gatt_conn_cfg_t { att_mtu: 256 }),
-        gatts_attr_tab_size: Some(raw::ble_gatts_cfg_attr_tab_size_t {
-            attr_tab_size: raw::BLE_GATTS_ATTR_TAB_SIZE_DEFAULT,
-        }),
-        gap_role_count: Some(raw::ble_gap_cfg_role_count_t {
-            adv_set_count: 1,
-            periph_role_count: 3,
-            central_role_count: 3,
-            central_sec_count: 0,
-            _bitfield_1: raw::ble_gap_cfg_role_count_t::new_bitfield_1(0),
-        }),
-        gap_device_name: Some(raw::ble_gap_cfg_device_name_t {
-            p_value: b"HelloRust" as *const u8 as _,
-            current_len: 9,
-            max_len: 9,
-            write_perm: unsafe { mem::zeroed() },
-            _bitfield_1: raw::ble_gap_cfg_device_name_t::new_bitfield_1(raw::BLE_GATTS_VLOC_STACK as u8),
-        }),
-        ..Default::default()
-    };
+    d_info!("Main script starting!");
 
     // Very finicky - HAL interrupts have to be given lower priority than softdeivce
     // this block needs to come before softdevice is enabled
@@ -89,81 +23,36 @@ async fn main(spawner: Spawner) {
     ecfg.time_interrupt_priority   = Priority::P2; // for time-driver-rtc1
     let _p = nrf52_rust_primer::hal::init(ecfg);
 
-    let sd = Softdevice::enable(&config);
-    let server = unwrap!(Server::new(sd));
-    unwrap!(spawner.spawn(softdevice_task(sd)));
+    // Starts softdevice and GATT server
+    let (ble, server) = BLEWrapper::start_with_gatt::<BLEServer>(spawner, None, None, None, |sd| BLEServer::new(sd).unwrap()).await;
 
-    static ADV_DATA: LegacyAdvertisementPayload = LegacyAdvertisementBuilder::new()
-        .flags(&[Flag::GeneralDiscovery, Flag::LE_Only])
-        .services_16(ServiceList::Complete, &[ServiceUuid16::BATTERY])
-        .full_name("HelloRust")
-        .build();
-
-    static SCAN_DATA: LegacyAdvertisementPayload = LegacyAdvertisementBuilder::new()
-        .services_128(
-            ServiceList::Complete,
-            &[0x9e7312e0_2354_11eb_9f10_fbc30a62cf38_u128.to_le_bytes()],
-        )
-        .build();
+    // Return and print BLE address
+    ble.get_ble_address().unwrap();
 
     // This loop will iterate every time either the update_fur or gatt_fur runs (so only upon disconnect)
     loop {
-        let config = peripheral::Config::default();
-        let adv: peripheral::ConnectableAdvertisement<'_> = peripheral::ConnectableAdvertisement::ScannableUndirected {
-            adv_data: &ADV_DATA,
-            scan_data: &SCAN_DATA,
-        };
 
-        // Code stops on this line until a connection is done
-        let conn = unwrap!(peripheral::advertise_connectable(sd, adv, &config).await);
+        // Advertise + wait for connection
+        let conn = ble.advertise(true).await.unwrap();
 
-        info!("Advertising done - Connection made!");
-
+        // Code for updating service characteristic
         let mut count: u16 = 0;
         let update_fut = async {
             loop {
                 Timer::after_millis(1000).await;
                 count += 1;
-                let _ = server.bas.darien_level_set(&count);
-                // server.bas.darien_level_notify(&conn, &count);
-                info!("Updated characteristic");
+                let _ = server.sensor_service.temperature_c_set(&count);
+                d_info!("Updated characteristic with value: {}", count);
             }
         };
         
         // Run the GATT server on the connection. This returns when the connection gets disconnected.
-        //
-        // Event enums (ServerEvent's) are generated by nrf_softdevice::gatt_server
-        // proc macro when applied to the Server struct above
-        let gatt_fut = gatt_server::run(&conn, &server, |e| match e {
-            ServerEvent::Bas(e) => match e {
-                BatteryServiceEvent::BatteryLevelCccdWrite { notifications } => {
-                    info!("battery notifications: {}", notifications)
-                }
-                BatteryServiceEvent::DarienLevelCccdWrite { notifications } => {
-                info!("darien notifications: {}", notifications)
-                }
-            },
-            ServerEvent::Foo(e) => match e {
-                FooServiceEvent::FooWrite(val) => {
-                    info!("wrote foo: {}", val);
-                    if let Err(e) = server.foo.foo_notify(&conn, &(val + 1)) {
-                        info!("send notification error: {:?}", e);
-                    }
-                }
-                FooServiceEvent::FooCccdWrite {
-                    indications,
-                    notifications,
-                } => {
-                    info!("foo indications: {}, notifications: {}", indications, notifications)
-                }
-            },
-        });
+        let gatt_server_fut = ble_services::my_gatt_server(&conn, &server);
 
-        match select(gatt_fut, update_fut).await {
-        Either::First(e) => info!("disconnected: {:?}", e),  // If the first passed future finishes first
-        Either::Second(_) => {},                                                // If the second passed future finished first (is an infite loop, should never finish)
-
-    };
-
+        // These are both async functions
+        match select(gatt_server_fut, update_fut).await {
+            Either::First(e) => d_info!("Device disonnected: {:?}", e),     // If the first passed future finishes first
+            Either::Second(_) => {},                                            // If the second passed future finished first (is an infite loop, should never finish)
+        };
     }
 }

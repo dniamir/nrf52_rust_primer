@@ -6,11 +6,12 @@ use nrf_softdevice::{ble, raw, Softdevice};
 use nrf_softdevice::ble::peripheral;
 use nrf_softdevice::ble::peripheral::{ConnectableAdvertisement, NonconnectableAdvertisement};
 use nrf_softdevice::ble::advertisement_builder::{Flag, LegacyAdvertisementBuilder, LegacyAdvertisementPayload, ServiceList, ServiceUuid16,};
+use nrf_softdevice::ble::gatt_server;
 
 use static_cell::StaticCell;
 use embassy_executor::Spawner;
 
-use crate::d_info;
+use crate::d_info;  // Logging
 
 static ADV_DATA: StaticCell<LegacyAdvertisementPayload> = StaticCell::new();
 static SCAN_DATA: StaticCell<LegacyAdvertisementPayload> = StaticCell::new();
@@ -38,59 +39,83 @@ pub struct BLEWrapper {
 }
 
 impl BLEWrapper {
+
+    /// Start with gatt entry point
+    pub async fn start_with_gatt<S>(spawner: Spawner, sd_cfg: SDCfgType, adv_data: AdvType, scan_data: ScanType, make_server: fn(&mut Softdevice) -> S,) -> (Self, S)
+    where
+        S: gatt_server::Server,
+    {
+        // Create SoftDevice and turn on BLE
+        d_info!("Creating SoftDevice and turning on BLE");
+        let sd_cfg = sd_cfg.unwrap_or_else(build_default_sd_config);
+        let sd = Softdevice::enable(&sd_cfg);
+
+        // Create GATT server
+        d_info!("Creating GATT Server");
+        let server = make_server(sd);
+
+        // Start SoftDevice event loop AFTER GATT server is created
+        d_info!("Starting SoftDevice");
+        spawner.spawn(softdevice_task(sd)).unwrap();
+
+        // Determine what advertisement data, scanner data, and advertisement config to use
+        let (adv_data, scan_data, adv_cfg) = Self::build_runtime(adv_data, scan_data);
+        
+        // Return BLEWrapper + GATT server
+        (Self {sd, adv_cfg, adv_data, scan_data }, server,)
+    }
+
     /// One entry point. Binary calls this once.
     pub async fn start(spawner: Spawner, sd_cfg: SDCfgType, adv_data: AdvType , scan_data: ScanType) -> Self {
-        // 1. SoftDevice config
-        let sd_cfg = match sd_cfg {
-            Some(d) => d,
-            None => build_default_sd_config(), 
-        };
 
-        // 2. Enable SoftDevice
+        // // Create Softdevice, turn on BLE, and start Softdevice event loop
+        d_info!("Creating SoftDevice, turning on BLE, and starting SoftDevice");
+        let sd_cfg = sd_cfg.unwrap_or_else(build_default_sd_config);
         let sd = Softdevice::enable(&sd_cfg);
         spawner.spawn(softdevice_task(sd)).unwrap();
 
-        // 3. Build payloads (once)
-        let adv_data = match adv_data {
-            Some(d) => d,
-            None => ADV_DATA.init(build_default_adv_payload()),
-        };
+        // Determine what advertisement data, scanner data, and advertisement config to use
+        let (adv_data, scan_data, adv_cfg) = Self::build_runtime(adv_data, scan_data);
+        Self { sd, adv_cfg, adv_data, scan_data }
+    }
 
-        let scan_data = match scan_data {
-            Some(d) => d,
-            None => SCAN_DATA.init(build_default_scan_payload()),
-        };
-
-        // 4. Advertising config
+    // Determine what advertisement data, scanner data, and advertisement config to use
+    fn build_runtime(adv_data: AdvType, scan_data: ScanType) -> (&'static LegacyAdvertisementPayload, &'static LegacyAdvertisementPayload, peripheral::Config)
+    {
+        let adv_data = adv_data.unwrap_or_else(|| ADV_DATA.init(build_default_adv_payload()));
+        let scan_data = scan_data.unwrap_or_else(|| SCAN_DATA.init(build_default_scan_payload()));
         let mut adv_cfg = peripheral::Config::default();
         adv_cfg.interval = 50;
-
-        d_info!("BLE started");
-
-        Self {sd, adv_cfg, adv_data, scan_data,}
+        (adv_data, scan_data, adv_cfg)
     }
 
-    // Non-connectable advertising (basic_ble_advertise)
-    pub async fn advertise_nonconnectable(&self) {
-        let adv = NonconnectableAdvertisement::ScannableUndirected {
-            adv_data: self.adv_data,
-            scan_data: self.scan_data,
-        };
+    // Advertise either as a connectable or non-connectable
+    pub async fn advertise(&self, connectable: bool) -> Option<ble::Connection> {
 
-        peripheral::advertise(self.sd, adv, &self.adv_cfg).await.unwrap();
+        let mut conn: Option<ble::Connection> = None;
+
+        // Advertise as a non-connectable
+        if !connectable {
+            d_info!("Creating non-connectable advertisement");
+            let adv = NonconnectableAdvertisement::ScannableUndirected {
+                adv_data: self.adv_data,
+                scan_data: self.scan_data,
+            };
+            peripheral::advertise(self.sd, adv, &self.adv_cfg).await.unwrap();
+        }
+        // Advertise as a connectable
+        else{
+            d_info!("Creating connectable advertisement");
+            let adv = ConnectableAdvertisement::ScannableUndirected {
+                adv_data: self.adv_data,
+                scan_data: self.scan_data,
+            };
+            conn = Some(peripheral::advertise_connectable(self.sd, adv, &self.adv_cfg).await.unwrap());
+        }
+        return conn
     }
 
-    // Connectable advertising (ble_char)
-    pub async fn advertise_connectable(&self) -> ble::Connection
-    {
-        let adv = ConnectableAdvertisement::ScannableUndirected {
-            adv_data: self.adv_data,
-            scan_data: self.scan_data,
-        };
-
-        peripheral::advertise_connectable(self.sd, adv, &self.adv_cfg).await.unwrap()
-    }
-
+    // Print BLE address
     pub fn get_ble_address(&self) -> Result<String<17>, BLEError> {
         // Print SoftDevice BLE address
         // Should already be a unique address from the FICR (Factory Information Configuration Registers)
@@ -108,7 +133,7 @@ impl BLEWrapper {
 }
 
 
-// DEFAULTS
+/// DEFAULTS
 
 // Default advertisement payload
 fn build_default_adv_payload() -> LegacyAdvertisementPayload {

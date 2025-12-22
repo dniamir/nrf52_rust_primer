@@ -50,3 +50,6 @@ pub mod bme680;
 
 #[path = "lib/ble/nrf_ble.rs"]
 pub mod nrf_ble;
+
+#[path = "lib/ble/ble_services.rs"]
+pub mod ble_services;
