@@ -52,10 +52,10 @@ fn handle_ble_event(e: BLEServerEvent) {
         // Sensor service
         BLEServerEvent::SensorService(e) => match e {
             SensorServiceEvent::TemperatureCCccdWrite { notifications } => {
-                d_info!("temperature notifications: {}", notifications);
+                d_info!("temperature_c notifications: {}", notifications);
             }
             SensorServiceEvent::PressurePaCccdWrite { notifications } => {
-                d_info!("pressure notifications: {}", notifications);
+                d_info!("pressure_c notifications: {}", notifications);
             }
         },
     }
