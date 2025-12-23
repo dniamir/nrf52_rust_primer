@@ -21,6 +21,9 @@ async fn softdevice_task(sd: &'static Softdevice) -> ! {
     sd.run().await
 }
 
+/// For examples and library documentation
+/// https://github.com/embassy-rs/nrf-softdevice/tree/master
+
 #[derive(Debug)]
 pub enum BLEError {
     NotFound,

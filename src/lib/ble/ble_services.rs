@@ -6,6 +6,8 @@ use nrf_softdevice::ble::gatt_server;
 use crate::d_info;  // Logging
 
 /// GATT SERVICES (there are multiple)
+/// For examples and library documentation
+/// https://github.com/embassy-rs/nrf-softdevice/tree/master
 
 // 16 bit UUIDs are predetermined by the BLE library
 #[nrf_softdevice::gatt_service(uuid = "180f")]
