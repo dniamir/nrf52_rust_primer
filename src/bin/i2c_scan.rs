@@ -12,7 +12,7 @@ use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
 use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
 use nrf52_rust_primer::{self as _, led::Led};
-use nrf52_rust_primer::d_info;
+use nrf52_rust_primer::{dlogger::DLogger, d_info};
 
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 
@@ -64,7 +64,7 @@ async fn i2c_scan(i2c_bus: &'static Mutex<ThreadModeRawMutex, Twim<'static>>) {
         }
 
         // Wait before next scan
-        d_info!("========");
+        DLogger::d_sep();
         Timer::after_secs(3).await;
     }
 }

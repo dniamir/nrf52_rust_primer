@@ -14,7 +14,7 @@ use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
 use nrf52_rust_primer::{self as _, led::Led, bme680::BME680};
 use nrf52_rust_primer::chip_implementations::I2CMutexWrapper;
 
-use nrf52_rust_primer::d_info;  // Logging
+use nrf52_rust_primer::{dlogger::DLogger, d_info};
 
 // Type alias for I2C bus
 pub type I2CMutex = &'static Mutex<ThreadModeRawMutex, Twim<'static>>;
@@ -56,39 +56,39 @@ async fn chip_read(i2c_bus: I2CMutexWrapper) {
         bme.chip.read_field("chip_id").await.unwrap();
         bme.chip.read_reg(0xD0).await.unwrap();
 
-        d_info!("========");
+        DLogger::d_sep();
 
         // bme.chip.write_reg(0x74, 0b11100011).await.unwrap();
         // bme.chip.read_reg(0x74).await.unwrap();
         // bme.chip.read_field("osrs_t").await.unwrap();
 
-        // d_info!("========");
+        // DLogger::d_sep();
 
         // bme.chip.write_reg(0x74, 0b00011100).await.unwrap();
         // bme.chip.read_reg(0x74).await.unwrap();
         // bme.chip.read_field("osrs_t").await.unwrap();
 
-        // d_info!("========");
+        // DLogger::d_sep();
 
         // bme.chip.write_field("osrs_t", 0b101).await.unwrap();
         // bme.chip.read_field("osrs_t").await.unwrap();
 
-        // d_info!("========");
+        // DLogger::d_sep();
 
         // bme.chip.write_reg_str("osrs_t", 0b101).await.unwrap();
         // bme.chip.read_reg_str("osrs_t").await.unwrap();
 
-        // d_info!("========");
+        // DLogger::d_sep();
 
         // let reg_vals = &mut [0u8; 4];
         // bme.chip.read_regs_str("Ctrl_hum", reg_vals).await.unwrap();
 
-        d_info!("========");
+        DLogger::d_sep();
 
         bme.read_temperature().await.unwrap();
         bme.read_pressure().await.unwrap();
 
-        d_info!("========");
+        DLogger::d_sep();
 
         // Wait before next scan
         Timer::after_secs(1).await;

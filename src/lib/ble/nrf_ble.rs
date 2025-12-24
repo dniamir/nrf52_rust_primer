@@ -11,7 +11,7 @@ use nrf_softdevice::ble::gatt_server;
 use static_cell::StaticCell;
 use embassy_executor::Spawner;
 
-use crate::d_info;  // Logging
+use crate::{dlogger::DLogger, d_info};  // Logging
 
 static ADV_DATA: StaticCell<LegacyAdvertisementPayload> = StaticCell::new();
 static SCAN_DATA: StaticCell<LegacyAdvertisementPayload> = StaticCell::new();
@@ -59,7 +59,7 @@ impl BLEWrapper {
 
         // Start SoftDevice event loop AFTER GATT server is created
         d_info!("Starting SoftDevice");
-        d_info!("========");
+        DLogger::d_sep();
         spawner.spawn(softdevice_task(sd)).unwrap();
 
         // Determine what advertisement data, scanner data, and advertisement config to use
@@ -74,7 +74,7 @@ impl BLEWrapper {
 
         // // Create Softdevice, turn on BLE, and start Softdevice event loop
         d_info!("Creating SoftDevice, turning on BLE, and starting SoftDevice");
-        d_info!("========");
+        DLogger::d_sep();
         let sd_cfg = sd_cfg.unwrap_or_else(build_default_sd_config);
         let sd = Softdevice::enable(&sd_cfg);
         spawner.spawn(softdevice_task(sd)).unwrap();
@@ -102,7 +102,7 @@ impl BLEWrapper {
         // Advertise as a non-connectable
         if !connectable {
             d_info!("Creating non-connectable advertisement");
-            d_info!("========");
+            DLogger::d_sep();
             let adv = NonconnectableAdvertisement::ScannableUndirected {
                 adv_data: self.adv_data,
                 scan_data: self.scan_data,
@@ -112,7 +112,7 @@ impl BLEWrapper {
         // Advertise as a connectable
         else{
             d_info!("Creating connectable advertisement");
-            d_info!("========");
+            DLogger::d_sep();
             let adv = ConnectableAdvertisement::ScannableUndirected {
                 adv_data: self.adv_data,
                 scan_data: self.scan_data,
@@ -134,7 +134,7 @@ impl BLEWrapper {
 
         // Log address
         d_info!("BLE Address is {}", address.as_str());
-        d_info!("========");
+        DLogger::d_sep();
 
         Ok(address)
     }

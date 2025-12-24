@@ -25,6 +25,11 @@ impl DLogger {
         // allowed only if counter == 0
         DLOGGER_HOLD_COUNT.load(Ordering::Relaxed) == 0
     }
+
+    #[inline]
+    pub fn d_sep() {
+        defmt::info!("=======================");
+    }
 }
 
 #[macro_export]

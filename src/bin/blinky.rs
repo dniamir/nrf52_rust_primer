@@ -4,7 +4,7 @@
 
 use embassy_executor::Spawner;
 use nrf52_rust_primer::{self as _, led::Led};
-use nrf52_rust_primer::d_info;
+use nrf52_rust_primer::{dlogger::DLogger, d_info};
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
@@ -21,6 +21,6 @@ async fn main(_spawner: Spawner) {
 
         d_info!("Count: {}", count);
         led.blink(100).await;
-        d_info!("========");
+        DLogger::d_sep();
     }
 }

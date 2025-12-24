@@ -3,7 +3,7 @@ use embassy_time::Timer;
 use core::sync::atomic::{AtomicI32, AtomicU32};
 
 use nrf_softdevice::ble::gatt_server;
-use crate::d_info;  // Logging
+use crate::{dlogger::DLogger, d_info};  // Logging
 
 /// GATT SERVICES (there are multiple)
 /// For examples and library documentation
@@ -75,8 +75,7 @@ pub async fn update_temperature(server: &BLEServer, atomic: &AtomicI32) {
 
         let _ = server.sensor_service.temperature_c_set(&char_val);
         d_info!("Updated temperature_c characteristic: {}", char_val);
-
-        d_info!("========");
+        DLogger::d_sep();
     }
 }
 
@@ -88,7 +87,6 @@ pub async fn update_pressure(server: &BLEServer, atomic: &AtomicU32) {
 
         let _ = server.sensor_service.pressure_pa_set(&char_val);
         d_info!("Updated pressure_pa characteristic: {}", char_val);
-
-        d_info!("========");
+        DLogger::d_sep();
     }
 }

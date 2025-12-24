@@ -13,7 +13,7 @@ use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
 use nrf52_rust_primer::{self as _, led::Led, chip::Chip};
 use nrf52_rust_primer::chip_implementations::I2CMutexWrapper;
-use nrf52_rust_primer::d_info;  // Logging
+use nrf52_rust_primer::{dlogger::DLogger, d_info};
 
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 
@@ -52,22 +52,22 @@ async fn chip_read(i2c_bus: I2CMutexWrapper) {
         // Read register with generic register read
         let _field_val2 = chip.read_reg(0xD0).await.unwrap();
 
-        d_info!("========");
+        DLogger::d_sep();
 
         chip.write_reg(0x74, 0b11100011).await.unwrap();
         chip.read_reg(0x74).await.unwrap();
 
-        d_info!("========");
+        DLogger::d_sep();
 
         chip.write_reg(0x74, 0b00011100).await.unwrap();
         chip.read_reg(0x74).await.unwrap();
 
-        d_info!("========");
+        DLogger::d_sep();
 
         let reg_vals = &mut [0u8; 4];
         chip.read_regs(0x74, reg_vals).await.unwrap();
 
-        d_info!("========");
+        DLogger::d_sep();
 
         // Wait before next scan
         Timer::after_secs(3).await;
