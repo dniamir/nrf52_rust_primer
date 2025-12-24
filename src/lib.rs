@@ -53,3 +53,6 @@ pub mod nrf_ble;
 
 #[path = "lib/ble/ble_services.rs"]
 pub mod ble_services;
+
+#[path = "lib/state.rs"]
+pub mod state;

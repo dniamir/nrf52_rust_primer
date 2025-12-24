@@ -4,7 +4,6 @@
 use static_cell::StaticCell;
 
 use core::sync::atomic::Ordering;
-use core::sync::atomic::{AtomicI32, AtomicU32};
 
 use embassy_executor::Spawner;
 use embassy_time::Timer;
@@ -34,8 +33,8 @@ static I2C_MUTEX: StaticCell<Mutex<ThreadModeRawMutex, Twim<'static>>> = StaticC
 static TX_BUF: StaticCell<[u8; 32]> = StaticCell::new();
 
 // Atomics for sharing data between threads
-static TEMP_VAL: AtomicI32 = AtomicI32::new(0);
-static PRESSURE_VAL: AtomicU32 = AtomicU32::new(0);
+use nrf52_rust_primer::state::TEMP_VAL;
+use nrf52_rust_primer::state::PRESSURE_VAL;
 
 // Async bme680 reads
 #[embassy_executor::task]
