@@ -2,13 +2,13 @@ use heapless::String;
 use core::marker::PhantomData;
 use core::fmt::Write;
 
-use crate::chip::{Chip, I2CProvider, I2CError};
-use crate::chip_map::{Field, FieldMapProvider};
+use phf::Map;  // Efficient map for register maps
+use phf_macros::phf_map;
+
+use crate::peripherals::chip::{Chip, I2CProvider, I2CError};
+use crate::peripherals::chip_map::{Field, FieldMapProvider};
 use crate::{dlogger::DLogger, d_info};  // Logging
 
-// Efficient map for register maps
-use phf::Map;
-use phf_macros::phf_map;
 
 #[derive(Debug)]
 pub enum BME680Error {

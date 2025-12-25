@@ -9,32 +9,22 @@ use embassy_executor::Spawner;
 use embassy_time::Timer;
 use embassy_futures::select::{select, Either};
 use embassy_futures::join::join;
-
 use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
-use nrf52_rust_primer::hal as _; // time driver
-use nrf52_rust_primer::hal::interrupt::Priority;
-
-use nrf52_rust_primer;
-use nrf52_rust_primer::nrf_ble::BLEWrapper;
-use nrf52_rust_primer::ble_services::*;
-use nrf52_rust_primer::ble_services;
-use nrf52_rust_primer::d_info;  // Logging
-
-use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::bme680::BME680;
-use nrf52_rust_primer::chip_implementations::I2CMutexWrapper;
+use nrf52_rust_primer::embassy_hal::{self, interrupt::Priority, bind_interrupts, peripherals, twim::{self, Twim}};
+use nrf52_rust_primer::ble::nrf_ble::BLEWrapper;
+use nrf52_rust_primer::ble::ble_services::{self, *};
+use nrf52_rust_primer::peripherals::sensors::bme680::BME680;
+use nrf52_rust_primer::peripherals::chip_implementations::I2CMutexWrapper;
+use nrf52_rust_primer::state::{TEMP_VAL, PRESSURE_VAL};
+use nrf52_rust_primer::d_info;
 
 // Static I2C bus protected by a Mutex for sharing between tasks
 pub type I2CMutex = &'static Mutex<ThreadModeRawMutex, Twim<'static>>;
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 static I2C_MUTEX: StaticCell<Mutex<ThreadModeRawMutex, Twim<'static>>> = StaticCell::new();
 static TX_BUF: StaticCell<[u8; 32]> = StaticCell::new();
-
-// Atomics for sharing data between threads
-use nrf52_rust_primer::state::TEMP_VAL;
-use nrf52_rust_primer::state::PRESSURE_VAL;
 
 // Async bme680 reads
 #[embassy_executor::task]
@@ -71,10 +61,10 @@ async fn main(spawner: Spawner) {
 
     // Very finicky - HAL interrupts have to be given lower priority than softdeivce
     // this block needs to come before SoftDevice is enabled
-    let mut ecfg = nrf52_rust_primer::hal::config::Config::default();
+    let mut ecfg = embassy_hal::config::Config::default();
     ecfg.gpiote_interrupt_priority = Priority::P2;
     ecfg.time_interrupt_priority   = Priority::P2; // for time-driver-rtc1
-    let p = nrf52_rust_primer::hal::init(ecfg);
+    let p = embassy_hal::init(ecfg);
 
     // Starts softdevice and GATT server - needs to happen before mutex is initialized
     let (ble, server) = BLEWrapper::start_with_gatt::<BLEServer>(spawner, None, None, None, |sd| BLEServer::new(sd).unwrap()).await;

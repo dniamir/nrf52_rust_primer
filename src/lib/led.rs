@@ -1,8 +1,9 @@
 // src/led.rs
-use crate::d_info;
-use crate::hal::gpio::{Pin, Output, Level, OutputDrive};
 use embassy_hal_internal::Peri;
 use embassy_time::Timer;
+
+use crate::embassy_hal::gpio::{Pin, Output, Level, OutputDrive};
+use crate::d_info;
 
 pub struct Led<'a> {
     led_pin: Output<'a>,

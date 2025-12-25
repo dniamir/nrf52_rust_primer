@@ -1,11 +1,10 @@
 #![no_std]
 #![no_main]
 
-use nrf52_rust_primer::hal as _; // time driver
 use embassy_executor::Spawner;
 
-use nrf52_rust_primer::nrf_ble::BLEWrapper;
-use nrf52_rust_primer as _;
+use nrf52_rust_primer::embassy_hal as _; // time driver
+use nrf52_rust_primer::ble::nrf_ble::BLEWrapper;
 use nrf52_rust_primer::d_info;  // Logging
 
 #[embassy_executor::main]

@@ -1,14 +1,13 @@
+use static_cell::StaticCell;
 use heapless::String;
 use core::fmt::Write;
 use core::mem;
 
 use nrf_softdevice::{ble, raw, Softdevice};
-use nrf_softdevice::ble::peripheral;
-use nrf_softdevice::ble::peripheral::{ConnectableAdvertisement, NonconnectableAdvertisement};
-use nrf_softdevice::ble::advertisement_builder::{Flag, LegacyAdvertisementBuilder, LegacyAdvertisementPayload, ServiceList, ServiceUuid16,};
-use nrf_softdevice::ble::gatt_server;
+use ble::peripheral::{self, ConnectableAdvertisement, NonconnectableAdvertisement};
+use ble::advertisement_builder::{Flag, LegacyAdvertisementBuilder, LegacyAdvertisementPayload, ServiceList, ServiceUuid16,};
+use ble::gatt_server;
 
-use static_cell::StaticCell;
 use embassy_executor::Spawner;
 
 use crate::{dlogger::DLogger, d_info};  // Logging

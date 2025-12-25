@@ -1,9 +1,9 @@
 use core::marker::PhantomData;
 
-use crate::hal::twim::Error as TwimError;
-
+use crate::embassy_hal::twim::Error as TwimError;
+use crate::peripherals::chip_map;
 use crate::{dlogger::DLogger, d_info};  // Logging
-use crate::chip_map;
+
 
 /// Define some error types
 #[derive(Debug)]

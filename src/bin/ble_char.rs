@@ -1,15 +1,13 @@
 #![no_std]
 #![no_main]
 
-use nrf52_rust_primer::hal as _; // time driver
 use embassy_executor::Spawner;
 use embassy_time::Timer;
 use embassy_futures::select::{select, Either};
-use nrf52_rust_primer::hal::interrupt::Priority;
 
-use nrf52_rust_primer::{self as _, ble_services};
-use nrf52_rust_primer::nrf_ble::BLEWrapper;
-use nrf52_rust_primer::ble_services::*;
+use nrf52_rust_primer::embassy_hal::{self, interrupt::Priority}; // time driver
+use nrf52_rust_primer::ble::nrf_ble::BLEWrapper;
+use nrf52_rust_primer::ble::ble_services::{*, self};
 use nrf52_rust_primer::d_info;  // Logging
 
 #[embassy_executor::main]
@@ -18,10 +16,10 @@ async fn main(spawner: Spawner) {
 
     // Very finicky - HAL interrupts have to be given lower priority than softdeivce
     // this block needs to come before softdevice is enabled
-    let mut ecfg = nrf52_rust_primer::hal::config::Config::default();
+    let mut ecfg = embassy_hal::config::Config::default();
     ecfg.gpiote_interrupt_priority = Priority::P2;
     ecfg.time_interrupt_priority   = Priority::P2; // for time-driver-rtc1
-    let _p = nrf52_rust_primer::hal::init(ecfg);
+    let _p = embassy_hal::init(ecfg);
 
     // Starts softdevice and GATT server
     let (ble, server) = BLEWrapper::start_with_gatt::<BLEServer>(spawner, None, None, None, |sd| BLEServer::new(sd).unwrap()).await;

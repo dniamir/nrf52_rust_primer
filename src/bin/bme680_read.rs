@@ -10,9 +10,9 @@ use embassy_hal_internal::Peri;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
-use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::{self as _, led::Led, bme680::BME680};
-use nrf52_rust_primer::chip_implementations::I2CMutexWrapper;
+use nrf52_rust_primer::embassy_hal::{self, bind_interrupts, peripherals, twim::{self, Twim}};
+use nrf52_rust_primer::led::Led;
+use nrf52_rust_primer::peripherals::{sensors::bme680::BME680, chip_implementations::I2CMutexWrapper};
 
 use nrf52_rust_primer::{dlogger::DLogger, d_info};
 
@@ -83,8 +83,6 @@ async fn chip_read(i2c_bus: I2CMutexWrapper) {
         // let reg_vals = &mut [0u8; 4];
         // bme.chip.read_regs_str("Ctrl_hum", reg_vals).await.unwrap();
 
-        DLogger::d_sep();
-
         bme.read_temperature().await.unwrap();
         bme.read_pressure().await.unwrap();
 
@@ -97,7 +95,7 @@ async fn chip_read(i2c_bus: I2CMutexWrapper) {
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
-    let p: nrf52_rust_primer::hal::Peripherals = nrf52_rust_primer::hal::init(Default::default());
+    let p: embassy_hal::Peripherals = embassy_hal::init(Default::default());
     
     // Initialize I2C bus config
     let mut config = twim::Config::default();

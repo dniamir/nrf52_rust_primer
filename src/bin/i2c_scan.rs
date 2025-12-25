@@ -10,8 +10,8 @@ use embassy_hal_internal::Peri;
 use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
-use nrf52_rust_primer::hal::{bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::{self as _, led::Led};
+use nrf52_rust_primer::embassy_hal::{self, bind_interrupts, peripherals, twim::{self, Twim}};
+use nrf52_rust_primer::led::Led;
 use nrf52_rust_primer::{dlogger::DLogger, d_info};
 
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
@@ -71,7 +71,7 @@ async fn i2c_scan(i2c_bus: &'static Mutex<ThreadModeRawMutex, Twim<'static>>) {
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
-    let p: nrf52_rust_primer::hal::Peripherals = nrf52_rust_primer::hal::init(Default::default());
+    let p: embassy_hal::Peripherals = embassy_hal::init(Default::default());
     
     // Initialize I2C bus
     let config = twim::Config::default();

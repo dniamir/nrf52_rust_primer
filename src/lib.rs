@@ -4,14 +4,14 @@ use defmt_rtt as _;
 
 // HAL abstraction layer - conditionally compile based on feature flags
 #[cfg(feature = "nrf")]
-pub use embassy_nrf as hal;
+pub use embassy_nrf as embassy_hal;
 
 #[cfg(feature = "stm32")]
-pub use embassy_stm32 as hal;
+pub use embassy_stm32 as embassy_hal;
 
 // Generic HAL initialization function
-pub fn init_hal(config: hal::config::Config) -> hal::Peripherals {
-    hal::init(config)
+pub fn init_hal(config: embassy_hal::config::Config) -> embassy_hal::Peripherals {
+    embassy_hal::init(config)
 }
 
 // Re-export logging macros - change this one line to swap logging frameworks
@@ -30,29 +30,35 @@ fn defmt_panic() -> ! {
     cortex_m::peripheral::SCB::sys_reset()
 }
 
+// --- Base Modules (Top Level) ---
 #[path = "lib/led.rs"]
 pub mod led;
-
-#[path = "lib/chip.rs"]
-pub mod chip;
-
-#[path = "lib/chip_implementations.rs"]
-pub mod chip_implementations;
-
-#[path = "lib/chip_map.rs"]
-pub mod chip_map;
 
 #[path = "lib/dlogger.rs"]
 pub mod dlogger;
 
-#[path = "lib/bme680.rs"]
-pub mod bme680;
-
-#[path = "lib/ble/nrf_ble.rs"]
-pub mod nrf_ble;
-
-#[path = "lib/ble/ble_services.rs"]
-pub mod ble_services;
-
 #[path = "lib/state.rs"]
 pub mod state;
+
+// --- BLE Module Group ---
+#[path = "lib/ble/"]
+pub mod ble {
+    pub mod nrf_ble;
+    pub mod ble_services;
+}
+
+// --- Peripherals Module Group ---
+#[path = "lib/peripherals/"]
+pub mod peripherals {
+
+    pub mod chip;
+    pub mod chip_implementations;
+    pub mod chip_map;
+
+    #[path = "sensors/"]
+    pub mod sensors {
+
+        #[path = "bme680/bme680.rs"]
+        pub mod bme680;
+    }
+}

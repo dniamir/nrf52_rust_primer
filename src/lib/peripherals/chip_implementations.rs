@@ -1,9 +1,9 @@
 use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
-use crate::hal::twim::{Twim};
+use crate::embassy_hal::twim::{Twim};
 
-use crate::chip::I2CProvider;
-use crate::chip::I2CError;
+use crate::peripherals::chip::{I2CProvider, I2CError};
+
 
 // Trait defined for embassy nRF52840 I2C mutex
 pub struct I2CMutexWrapper(pub &'static Mutex<ThreadModeRawMutex, Twim<'static>>);
