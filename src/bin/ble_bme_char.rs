@@ -31,7 +31,8 @@ async fn main(spawner: Spawner) {
 
     // Spawn bme680 task (runs concurrently in background)
     d_info!("BME680 Read starting...");
-    let bme_delay_ms: u64 = 500;
+    let bme_delay_ms: u64 = 500;    // Frequency at which to read the sensor
+    let bme_update_ms: u64 = 1000;  // Frequency at which to update the characteristic
     spawner.spawn(bme_update(i2c_mutex_wrapper, bme_delay_ms)).unwrap();
 
     // This loop will iterate every time either the update_fur or gatt_fur runs (so only upon disconnect)
@@ -43,8 +44,8 @@ async fn main(spawner: Spawner) {
         // Code for updating service characteristic
         // This joins multiple futures into 1
         let update_characteristics = join(
-            ble_services::update_temperature(&server, &TEMP_VAL),
-            ble_services::update_pressure(&server, &PRESSURE_VAL),
+            ble_services::update_temperature(&server, &TEMP_VAL, bme_update_ms),
+            ble_services::update_pressure(&server, &PRESSURE_VAL, bme_update_ms),
         );
         
         // Run the GATT server on the connection. This returns when the connection gets disconnected.

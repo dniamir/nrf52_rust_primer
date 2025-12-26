@@ -66,9 +66,9 @@ fn handle_ble_event(e: BLEServerEvent) {
     }
 }
 
-pub async fn update_temperature(server: &BLEServer, atomic: &AtomicI32) {
+pub async fn update_temperature(server: &BLEServer, atomic: &AtomicI32, update_ms: u64) {
     loop {
-        Timer::after_millis(1000).await;
+        Timer::after_millis(update_ms).await;
 
         let char_val = atomic.load(Ordering::Relaxed);
 
@@ -78,9 +78,9 @@ pub async fn update_temperature(server: &BLEServer, atomic: &AtomicI32) {
     }
 }
 
-pub async fn update_pressure(server: &BLEServer, atomic: &AtomicU32) {
+pub async fn update_pressure(server: &BLEServer, atomic: &AtomicU32, update_ms: u64) {
     loop {
-        Timer::after_millis(1000).await;
+        Timer::after_millis(update_ms).await;
 
         let char_val = atomic.load(Ordering::Relaxed);
 
