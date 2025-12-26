@@ -58,6 +58,8 @@ pub mod peripherals {
     #[path = "sensors/"]
     pub mod sensors {
 
+        pub mod sensor_updates;
+
         #[path = "bme680/bme680.rs"]
         pub mod bme680;
     }
