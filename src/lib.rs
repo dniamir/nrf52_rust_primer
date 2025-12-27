@@ -59,6 +59,9 @@ pub mod d_peripherals {
     #[path = "sensors/"]
     pub mod sensors {
 
+        #[path = "tsl2591/tsl2591.rs"]
+        pub mod tsl2591;
+
         #[path = "bme680/bme680.rs"]
         pub mod bme680;
     }
