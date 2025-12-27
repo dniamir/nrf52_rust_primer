@@ -73,7 +73,7 @@ pub async fn bme_update(i2c_bus: I2CMutexWrapper, delay_ms: u64) {
     loop {
 
         // Read register with generic register read
-        bme.chip.read_field("chip_id").await.unwrap();
+        bme.chip.read_field_str("chip_id").await.unwrap();
         bme.chip.read_reg(0xD0).await.unwrap();
 
         let temp_val = bme.read_temperature().await.unwrap();
