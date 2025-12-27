@@ -1,0 +1,9 @@
+[submodule "src/lib/d_ble"]
+	path = src/lib/d_ble
+	url = https://dniamir@github.com/dniamir/d_ble.git
+[submodule "src/lib/d_log"]
+	path = src/lib/d_log
+	url = https://dniamir@github.com/dniamir/d_log.git
+[submodule "src/lib/d_peripherals"]
+	path = src/lib/d_peripherals
+	url = https://dniamir@github.com/dniamir/d_peripherals.git
