@@ -1,8 +1,8 @@
 use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
-use crate::embassy_hal::twim::{Twim};
+use embassy_nrf::twim::{Twim};
 
-use crate::peripherals::chip::{I2CProvider, I2CError};
+use crate::d_peripherals::chip::{I2CProvider, I2CError};
 
 
 // Trait defined for embassy nRF52840 I2C mutex

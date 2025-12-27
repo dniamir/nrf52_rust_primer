@@ -11,10 +11,10 @@ use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::ThreadModeRawMutex;
 
 use nrf52_rust_primer::embassy_hal::{self, bind_interrupts, peripherals, twim::{self, Twim}};
-use nrf52_rust_primer::led::Led;
-use nrf52_rust_primer::peripherals::{sensors::bme680::BME680, chip_implementations::I2CMutexWrapper};
+use nrf52_rust_primer::d_peripherals::led::Led;
+use nrf52_rust_primer::d_peripherals::{sensors::bme680::BME680, chip_implementations::I2CMutexWrapper};
 
-use nrf52_rust_primer::{dlogger::DLogger, d_info};
+use nrf52_rust_primer::{d_log::dlogger::DLogger, d_info};
 
 // Type alias for I2C bus
 pub type I2CMutex = &'static Mutex<ThreadModeRawMutex, Twim<'static>>;

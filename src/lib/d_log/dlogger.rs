@@ -35,7 +35,7 @@ impl DLogger {
 #[macro_export]
 macro_rules! d_info {
     ($($arg:tt)*) => {
-        if $crate::dlogger::DLogger::allowed() {
+        if $crate::d_log::dlogger::DLogger::allowed() {
             defmt::info!($($arg)*);
         }
     };

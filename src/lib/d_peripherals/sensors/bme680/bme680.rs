@@ -5,9 +5,9 @@ use core::fmt::Write;
 use phf::Map;  // Efficient map for register maps
 use phf_macros::phf_map;
 
-use crate::peripherals::chip::{Chip, I2CProvider, I2CError};
-use crate::peripherals::chip_map::{Field, FieldMapProvider};
-use crate::{dlogger::DLogger, d_info};  // Logging
+use crate::d_peripherals::chip::{Chip, I2CProvider, I2CError};
+use crate::d_peripherals::chip_map::{Field, FieldMapProvider};
+use crate::{d_log::dlogger::DLogger, d_info};  // Logging
 
 
 #[derive(Debug)]

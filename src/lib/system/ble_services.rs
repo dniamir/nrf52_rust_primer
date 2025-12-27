@@ -2,7 +2,7 @@ use core::sync::atomic::{AtomicI32, AtomicU32, Ordering};
 use embassy_time::Timer;
 use nrf_softdevice::ble::gatt_server;
 
-use crate::{dlogger::DLogger, d_info};  // Logging
+use crate::{d_log::dlogger::DLogger, d_info};  // Logging
 
 /// GATT SERVICES (there are multiple)
 /// For examples and library documentation

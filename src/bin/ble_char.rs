@@ -6,8 +6,8 @@ use embassy_time::Timer;
 use embassy_futures::select::{select, Either};
 
 use nrf52_rust_primer::embassy_hal::{self, interrupt::Priority}; // time driver
-use nrf52_rust_primer::ble::nrf_ble::BLEWrapper;
-use nrf52_rust_primer::ble::ble_services::{*, self};
+use nrf52_rust_primer::d_ble::nrf_ble::BLEWrapper;
+use nrf52_rust_primer::system::ble_services::{*, self};
 use nrf52_rust_primer::d_info;  // Logging
 
 #[embassy_executor::main]

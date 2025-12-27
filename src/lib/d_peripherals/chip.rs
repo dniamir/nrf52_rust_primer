@@ -1,8 +1,8 @@
 use core::marker::PhantomData;
 
 use crate::embassy_hal::twim::Error as TwimError;
-use crate::peripherals::chip_map;
-use crate::{dlogger::DLogger, d_info};  // Logging
+use crate::d_peripherals::chip_map;
+use crate::{d_log::dlogger::DLogger, d_info};  // Logging
 
 
 /// Define some error types

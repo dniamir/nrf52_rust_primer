@@ -31,34 +31,33 @@ fn defmt_panic() -> ! {
 }
 
 // --- Base Modules (Top Level) ---
-#[path = "lib/led.rs"]
-pub mod led;
-
-#[path = "lib/dlogger.rs"]
-pub mod dlogger;
-
-#[path = "lib/state.rs"]
-pub mod state;
-
-// --- BLE Module Group ---
-#[path = "lib/ble/"]
-pub mod ble {
-    pub mod nrf_ble;
+#[path = "lib/system/"]
+pub mod system {
+    pub mod state;
     pub mod ble_services;
+    pub mod sensor_updates;
 }
 
-// --- Peripherals Module Group ---
-#[path = "lib/peripherals/"]
-pub mod peripherals {
+// --- BLE Module Group ---
+#[path = "lib/d_ble/"]
+pub mod d_ble {
+    pub mod nrf_ble;
+}
 
+#[path = "lib/d_log/"]
+pub mod d_log {
+    pub mod dlogger;
+}
+
+#[path = "lib/d_peripherals/"]
+pub mod d_peripherals {
+    pub mod led;
     pub mod chip;
     pub mod chip_implementations;
     pub mod chip_map;
 
     #[path = "sensors/"]
     pub mod sensors {
-
-        pub mod sensor_updates;
 
         #[path = "bme680/bme680.rs"]
         pub mod bme680;

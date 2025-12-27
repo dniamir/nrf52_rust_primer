@@ -4,8 +4,8 @@
 
 use embassy_executor::Spawner;
 use nrf52_rust_primer::embassy_hal;
-use nrf52_rust_primer::led::Led;
-use nrf52_rust_primer::{dlogger::DLogger, d_info};
+use nrf52_rust_primer::d_peripherals::led::Led;
+use nrf52_rust_primer::{d_log::dlogger::DLogger, d_info};
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {

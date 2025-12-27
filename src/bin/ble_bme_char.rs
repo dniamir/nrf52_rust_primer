@@ -5,10 +5,10 @@ use embassy_executor::Spawner;
 use embassy_futures::select::{select, Either};
 use embassy_futures::join::join;
 
-use nrf52_rust_primer::ble::nrf_ble::BLEWrapper;
-use nrf52_rust_primer::ble::ble_services::{self, *};
-use nrf52_rust_primer::peripherals::sensors::sensor_updates::{self, bme_update};
-use nrf52_rust_primer::state::{TEMP_VAL, PRESSURE_VAL};
+use nrf52_rust_primer::d_ble::nrf_ble::BLEWrapper;
+use nrf52_rust_primer::system::ble_services::{self, *};
+use nrf52_rust_primer::system::sensor_updates::{self, bme_update};
+use nrf52_rust_primer::system::state::{TEMP_VAL, PRESSURE_VAL};
 
 use nrf52_rust_primer::d_info;
 

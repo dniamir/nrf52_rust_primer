@@ -11,11 +11,11 @@ use embassy_hal_internal::Peri;
 use crate::embassy_hal::gpio::Pin;
 use crate::embassy_hal::{self, Peripherals, bind_interrupts, interrupt::Priority, twim::{self, Twim}};
 use crate::embassy_hal::peripherals;
-use crate::peripherals::chip_implementations::I2CMutexWrapper;
-use crate::peripherals::sensors::bme680::BME680;
+use crate::d_peripherals::chip_implementations::I2CMutexWrapper;
+use crate::d_peripherals::sensors::bme680::BME680;
 
-use crate::state::{TEMP_VAL, PRESSURE_VAL};
-use crate::{dlogger::DLogger, d_info};
+use crate::system::state::{TEMP_VAL, PRESSURE_VAL};
+use crate::{d_log::dlogger::DLogger, d_info};
 
 bind_interrupts!(struct Irqs {TWISPI0 => twim::InterruptHandler<peripherals::TWISPI0>;});
 static I2C_MUTEX: StaticCell<Mutex<ThreadModeRawMutex, Twim<'static>>> = StaticCell::new();
